@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import Logo from './Logo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,8 +15,11 @@ function Layout({ children }: LayoutProps) {
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link to="/" className="text-xl font-semibold text-slate-900 hover:text-slate-700 transition">
-              re-imagined.me
+            <Link
+              to="/"
+              className="flex items-center gap-3 text-xl font-semibold text-slate-900 hover:text-slate-700 transition"
+            >
+              <Logo variant="compact" />
             </Link>
 
             <div className="hidden md:flex space-x-8">

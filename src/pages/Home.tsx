@@ -1,6 +1,7 @@
 import { useState, FormEvent, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map } from 'lucide-react';
+import Logo from '../components/Logo';
 
 interface FormData {
   jobTitle: string;
@@ -285,7 +286,10 @@ function Home() {
     <div className={`min-h-screen ${isAssessmentMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50'}`}>
       {!isAssessmentMode && (
         <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <div className="flex justify-center">
+              <Logo className="justify-center" />
+            </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
               Design your next chapter, not just your next job
           </h1>
