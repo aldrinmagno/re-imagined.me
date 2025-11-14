@@ -1,4 +1,4 @@
-import { useState, FormEvent, KeyboardEvent } from 'react';
+import { useState, FormEvent, KeyboardEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import Logo from '../components/Logo';
@@ -45,10 +45,20 @@ function Home() {
   const navigate = useNavigate();
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [isAssessmentActive, setIsAssessmentActive] = useState(false);
+  const [hasAssessmentStarted, setHasAssessmentStarted] = useState(false);
   const [formData, setFormData] = useState<FormData>(() => createInitialFormData());
   const [currentStep, setCurrentStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const [error, setError] = useState('');
+  const [stepAnimationKey, setStepAnimationKey] = useState(0);
+  const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
+
+  useEffect(() => {
+    setStepAnimationKey((prev) => prev + 1);
+  }, [currentStep]);
+
+  const stepAnimationClass =
+    transitionDirection === 'forward' ? 'animate-step-forward' : 'animate-step-backward';
 
   const steps: StepDefinition[] = [
     {
@@ -191,12 +201,14 @@ function Home() {
 
   const handleFieldChange = (field: keyof FormData, value: string) => {
     if (!isAssessmentActive) {
+      setHasAssessmentStarted(true);
       setIsAssessmentActive(true);
     }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleNext = (autoAdvance = false) => {
+    setTransitionDirection('forward');
     if (currentStep >= steps.length - 1) {
       return;
     }
@@ -219,6 +231,7 @@ function Home() {
   const handlePrevious = () => {
     if (currentStep === 0) return;
     setError('');
+    setTransitionDirection('backward');
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
@@ -230,11 +243,13 @@ function Home() {
       return;
     }
     setError('');
+    setTransitionDirection(index > currentStep ? 'forward' : 'backward');
     setCurrentStep(index);
   };
 
   const maybeAutoAdvance = () => {
     if (currentStep < steps.length - 1) {
+      setTransitionDirection('forward');
       setTimeout(() => handleNext(true), 200);
     }
   };
@@ -271,6 +286,7 @@ function Home() {
     console.log('Form submitted:', formData);
     setShowSnapshot(true);
     setIsAssessmentActive(false);
+    setHasAssessmentStarted(false);
     setError('');
 
     setTimeout(() => {
@@ -291,6 +307,16 @@ function Home() {
     setFurthestStep(0);
     setError('');
     setFormData(createInitialFormData());
+    setHasAssessmentStarted(false);
+    setTransitionDirection('forward');
+    setStepAnimationKey(0);
+  };
+
+  const startAssessment = () => {
+    setHasAssessmentStarted(true);
+    setIsAssessmentActive(true);
+    setTransitionDirection('forward');
+    scrollToSection('assessment');
   };
 
   return (
@@ -309,10 +335,7 @@ function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
-              onClick={() => {
-                setIsAssessmentActive(true);
-                scrollToSection('assessment');
-              }}
+              onClick={startAssessment}
               className="bg-slate-900 text-white px-8 py-4 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               Start your assessment
@@ -421,7 +444,7 @@ function Home() {
               isAssessmentMode
                 ? 'rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur p-6 sm:p-10 shadow-2xl'
                 : 'bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-slate-200'
-            }`}
+            } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
           >
             <div className="space-y-8">
               <div>
@@ -464,121 +487,133 @@ function Home() {
                 </div>
               </div>
 
-              <div>
-                <h3
-                  className={`text-2xl sm:text-3xl font-semibold ${
-                    isAssessmentMode ? 'text-white' : 'text-slate-900'
-                  }`}
+              <div className="relative">
+                <div
+                  key={stepAnimationKey}
+                  className={`space-y-6 ${stepAnimationClass}`}
                 >
-                  {steps[currentStep].prompt}
-                </h3>
-                {steps[currentStep].helperText && (
-                  <p
-                    className={`mt-2 text-sm ${
-                      isAssessmentMode ? 'text-slate-400' : 'text-slate-500'
-                    }`}
-                  >
-                    {steps[currentStep].helperText}
-                  </p>
-                )}
-                <div className="mt-6">
-                  {(() => {
-                    const step = steps[currentStep];
-                    const commonInputClasses = `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-base ${
-                      isAssessmentMode
-                        ? 'bg-slate-800/80 border-slate-700 text-white placeholder-slate-400 focus:ring-white'
-                        : 'border-slate-300 focus:ring-slate-900'
-                    }`;
+                  <div>
+                    <h3
+                      className={`text-2xl sm:text-3xl font-semibold ${
+                        isAssessmentMode ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
+                      {steps[currentStep].prompt}
+                    </h3>
+                    {steps[currentStep].helperText && (
+                      <p
+                        className={`mt-2 text-sm ${
+                          isAssessmentMode ? 'text-slate-400' : 'text-slate-500'
+                        }`}
+                      >
+                        {steps[currentStep].helperText}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    {(() => {
+                      const step = steps[currentStep];
+                      const commonInputClasses = `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-base ${
+                        isAssessmentMode
+                          ? 'bg-slate-800/80 border-slate-700 text-white placeholder-slate-400 focus:ring-white'
+                          : 'border-slate-300 focus:ring-slate-900'
+                      }`;
 
-                    if (step.type === 'input') {
-                      return (
-                        <input
-                          type={step.inputType ?? 'text'}
-                          inputMode={step.inputMode}
-                          value={getFieldValue(step.id)}
-                          onChange={(event) => handleFieldChange(step.id, event.target.value)}
-                          onKeyDown={handleEnterKey}
-                          placeholder={step.placeholder}
-                          className={commonInputClasses}
-                          min={step.inputType === 'number' ? 0 : undefined}
-                        />
-                      );
-                    }
+                      if (step.type === 'input') {
+                        return (
+                          <input
+                            type={step.inputType ?? 'text'}
+                            inputMode={step.inputMode}
+                            value={getFieldValue(step.id)}
+                            onChange={(event) => handleFieldChange(step.id, event.target.value)}
+                            onKeyDown={handleEnterKey}
+                            placeholder={step.placeholder}
+                            className={commonInputClasses}
+                            min={step.inputType === 'number' ? 0 : undefined}
+                          />
+                        );
+                      }
 
-                    if (step.type === 'textarea') {
-                      return (
-                        <textarea
-                          value={getFieldValue(step.id)}
-                          onChange={(event) => handleFieldChange(step.id, event.target.value)}
-                          placeholder={step.placeholder}
-                          rows={step.rows ?? 4}
-                          className={commonInputClasses}
-                        />
-                      );
-                    }
+                      if (step.type === 'textarea') {
+                        return (
+                          <textarea
+                            value={getFieldValue(step.id)}
+                            onChange={(event) => handleFieldChange(step.id, event.target.value)}
+                            placeholder={step.placeholder}
+                            rows={step.rows ?? 4}
+                            className={commonInputClasses}
+                          />
+                        );
+                      }
 
-                    if (step.type === 'select' && step.options) {
-                      return (
-                        <select
-                          value={getFieldValue(step.id)}
-                          onChange={(event) => {
-                            handleFieldChange(step.id, event.target.value);
-                            if (event.target.value) {
-                              maybeAutoAdvance();
-                            }
-                          }}
-                          className={`${commonInputClasses} ${isAssessmentMode ? 'bg-slate-800/80 text-white' : 'bg-white'}`}
-                        >
-                          <option value="">{step.placeholder ?? 'Select an option'}</option>
-                          {step.options.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      );
-                    }
+                      if (step.type === 'select' && step.options) {
+                        return (
+                          <select
+                            value={getFieldValue(step.id)}
+                            onChange={(event) => {
+                              handleFieldChange(step.id, event.target.value);
+                              if (event.target.value) {
+                                maybeAutoAdvance();
+                              }
+                            }}
+                            className={`${commonInputClasses} ${isAssessmentMode ? 'bg-slate-800/80 text-white' : 'bg-white'}`}
+                          >
+                            <option value="">{step.placeholder ?? 'Select an option'}</option>
+                            {step.options.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        );
+                      }
 
-                    if (step.type === 'radio' && step.options) {
-                      return (
-                        <div className="space-y-3">
-                          {step.options.map((option) => (
-                            <label
-                              key={option.value}
-                              className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
-                                getFieldValue(step.id) === option.value
-                                  ? isAssessmentMode
-                                    ? 'border-white/70 bg-white/5'
-                                    : 'border-slate-900 bg-slate-900/5'
-                                  : isAssessmentMode
-                                    ? 'border-slate-700 hover:border-slate-500'
-                                    : 'border-slate-200 hover:border-slate-900'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={step.id}
-                                value={option.value}
-                                checked={getFieldValue(step.id) === option.value}
-                                onChange={(event) => {
-                                  handleFieldChange(step.id, event.target.value);
-                                  maybeAutoAdvance();
-                                }}
-                                className={`mt-1 focus:ring-2 ${
-                                  isAssessmentMode
-                                    ? 'text-white focus:ring-white'
-                                    : 'text-slate-900 focus:ring-slate-900'
-                                }`}
-                              />
-                              <span className={isAssessmentMode ? 'text-slate-100' : 'text-slate-700'}>{option.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      );
-                    }
+                      if (step.type === 'radio' && step.options) {
+                        return (
+                          <div className="space-y-3">
+                            {step.options.map((option) => {
+                              const isSelected = getFieldValue(step.id) === option.value;
+                              return (
+                                <label
+                                  key={option.value}
+                                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
+                                    isSelected
+                                      ? isAssessmentMode
+                                        ? 'border-white/70 bg-white/5'
+                                        : 'border-slate-900 bg-slate-900/5'
+                                      : isAssessmentMode
+                                        ? 'border-slate-700 hover:border-slate-500'
+                                        : 'border-slate-200 hover:border-slate-900'
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={step.id}
+                                    value={option.value}
+                                    checked={isSelected}
+                                    onChange={(event) => {
+                                      handleFieldChange(step.id, event.target.value);
+                                      maybeAutoAdvance();
+                                    }}
+                                    className={`mt-1 focus:ring-2 ${
+                                      isAssessmentMode
+                                        ? 'text-white focus:ring-white'
+                                        : 'text-slate-900 focus:ring-slate-900'
+                                    }`}
+                                  />
+                                  <span className={isAssessmentMode ? 'text-slate-100' : 'text-slate-700'}>
+                                    {option.label}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
 
-                    return null;
-                  })()}
+                      return null;
+                    })()}
+                  </div>
                 </div>
               </div>
 
