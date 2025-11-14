@@ -16,6 +16,16 @@ interface FormData {
 
 type StepType = 'input' | 'textarea' | 'select' | 'radio';
 
+type InputModeType =
+  | 'none'
+  | 'text'
+  | 'tel'
+  | 'url'
+  | 'email'
+  | 'numeric'
+  | 'decimal'
+  | 'search';
+
 interface StepDefinition {
   id: keyof FormData;
   title: string;
@@ -26,7 +36,7 @@ interface StepDefinition {
   options?: { value: string; label: string; description?: string }[];
   rows?: number;
   helperText?: string;
-  inputMode?: string;
+  inputMode?: InputModeType;
   inputType?: string;
 }
 
@@ -52,6 +62,8 @@ function Home() {
   const [error, setError] = useState('');
   const [stepAnimationKey, setStepAnimationKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
+
+  const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
   useEffect(() => {
     setStepAnimationKey((prev) => prev + 1);
@@ -309,8 +321,6 @@ function Home() {
   const goalText = formData.lookingFor === 'strengthen' ? 'Strengthen and future-proof my current role' :
                    formData.lookingFor === 'transition' ? 'Transition to a new role or discipline' :
                    formData.lookingFor === 'explore' ? 'Explore side projects or additional income streams' : 'your next chapter';
-
-  const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
