@@ -57,6 +57,18 @@ function Home() {
     setStepAnimationKey((prev) => prev + 1);
   }, [currentStep]);
 
+  useEffect(() => {
+    if (isAssessmentMode) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isAssessmentMode]);
+
   const stepAnimationClass =
     transitionDirection === 'forward' ? 'animate-step-forward' : 'animate-step-backward';
 
@@ -320,7 +332,13 @@ function Home() {
   };
 
   return (
-    <div className={`min-h-screen ${isAssessmentMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50'}`}>
+    <div
+      className={`${
+        isAssessmentMode
+          ? 'min-h-screen h-screen bg-slate-900 text-slate-100'
+          : 'min-h-screen bg-slate-50'
+      }`}
+    >
       {!isAssessmentMode && (
         <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-8">
