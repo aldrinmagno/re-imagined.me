@@ -1,6 +1,6 @@
 import { useState, FormEvent, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle, TrendingUp, Map } from 'lucide-react';
+import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import Logo from '../components/Logo';
 
 interface FormData {
@@ -30,20 +30,22 @@ interface StepDefinition {
   inputType?: string;
 }
 
+const createInitialFormData = (): FormData => ({
+  jobTitle: '',
+  industry: '',
+  yearsExperience: '',
+  strengths: '',
+  typicalWeek: '',
+  lookingFor: '',
+  workPreferences: '',
+  email: ''
+});
+
 function Home() {
   const navigate = useNavigate();
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [isAssessmentActive, setIsAssessmentActive] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    jobTitle: '',
-    industry: '',
-    yearsExperience: '',
-    strengths: '',
-    typicalWeek: '',
-    lookingFor: '',
-    workPreferences: '',
-    email: ''
-  });
+  const [formData, setFormData] = useState<FormData>(() => createInitialFormData());
   const [currentStep, setCurrentStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const [error, setError] = useState('');
@@ -282,6 +284,15 @@ function Home() {
 
   const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
+  const handleExitAssessment = () => {
+    setIsAssessmentActive(false);
+    setShowSnapshot(false);
+    setCurrentStep(0);
+    setFurthestStep(0);
+    setError('');
+    setFormData(createInitialFormData());
+  };
+
   return (
     <div className={`min-h-screen ${isAssessmentMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50'}`}>
       {!isAssessmentMode && (
@@ -376,6 +387,16 @@ function Home() {
             : 'py-16 px-4 sm:px-6 lg:px-8 bg-slate-50'
         }`}
       >
+        {isAssessmentMode && (
+          <button
+            type="button"
+            onClick={handleExitAssessment}
+            className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
+          >
+            <X size={16} aria-hidden="true" />
+            Exit
+          </button>
+        )}
         <div
           className={`${
             isAssessmentMode
