@@ -79,21 +79,21 @@ const AssessmentPreviewPanel = ({
 
   return (
     <aside
-      className={`rounded-3xl border border-slate-300 bg-white/95 p-6 shadow-xl shadow-emerald-200/20 backdrop-blur ${
+      className={`rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-sm shadow-slate-200/40 backdrop-blur ${
         mode === 'full' ? 'lg:p-10' : 'lg:p-8'
       }`}
     >
       <div className="space-y-8">
         <header>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-slate-400">
             {mode === 'full' ? 'Your personalised snapshot' : 'Live assessment preview'}
           </p>
-          <h3 className="mt-4 text-2xl font-bold text-slate-900 sm:text-3xl">
+          <h3 className="mt-3 text-xl font-semibold text-slate-900 sm:text-2xl">
             {mode === 'full'
               ? 'Initial snapshot of your next chapter'
               : 'See your snapshot take shape'}
           </h3>
-          <p className="mt-3 text-sm text-slate-600 sm:text-base">
+          <p className="mt-2 text-sm text-slate-600 sm:text-base">
             {mode === 'full'
               ? "You're currently a "
               : 'As you fill in each prompt, we stitch together the key signals that will inform your roadmap.'}
@@ -113,7 +113,7 @@ const AssessmentPreviewPanel = ({
           </p>
         </header>
 
-        <dl className="grid gap-4 rounded-2xl border border-slate-200 bg-white/90 p-5 text-sm text-slate-600">
+        <dl className="grid gap-4 rounded-2xl border border-slate-200 bg-white/60 p-5 text-sm text-slate-600">
           {detailItems.map((item) => (
             <div key={item.label} className="flex flex-col gap-1">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -131,7 +131,7 @@ const AssessmentPreviewPanel = ({
             {liveSections.map((section) => (
               <div
                 key={section.title}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-inner shadow-emerald-200/10"
+                className="rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-inner shadow-slate-200/20"
               >
                 <h4 className="text-sm font-semibold text-slate-700">{section.title}</h4>
                 <p className="mt-2 text-sm text-slate-600">
@@ -143,7 +143,7 @@ const AssessmentPreviewPanel = ({
         ) : (
           <div className="space-y-8">
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-emerald-200/10">
+              <div className="rounded-2xl border border-slate-200 bg-white/70 p-6 shadow-sm shadow-slate-200/20">
                 <h4 className="mb-3 text-lg font-semibold text-slate-900">
                   How your work may evolve
                 </h4>
@@ -151,7 +151,7 @@ const AssessmentPreviewPanel = ({
                   As new technologies such as AI, automation, and robotics advance, certain tasks in your role may change. In the full version, we'll help you identify which parts of your work are likely to increase in strategic value.
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-emerald-200/10">
+              <div className="rounded-2xl border border-slate-200 bg-white/70 p-6 shadow-sm shadow-slate-200/20">
                 <h4 className="mb-3 text-lg font-semibold text-slate-900">
                   Potential future directions
                 </h4>
@@ -159,7 +159,7 @@ const AssessmentPreviewPanel = ({
                   We will suggest both established roles and new, emerging opportunities that align with your strengths and industry knowledge — including roles made possible by AI, humanoid robots, 3D printing, AR/VR, and other innovations.
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-emerald-200/10">
+              <div className="rounded-2xl border border-slate-200 bg-white/70 p-6 shadow-sm shadow-slate-200/20">
                 <h4 className="mb-3 text-lg font-semibold text-slate-900">
                   Structured next steps
                 </h4>
@@ -168,7 +168,7 @@ const AssessmentPreviewPanel = ({
                 </p>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 text-center shadow-inner shadow-emerald-200/10">
+            <div className="rounded-2xl border border-slate-200 bg-white/60 p-5 text-center shadow-inner shadow-slate-200/20">
               <p className="text-sm text-slate-600">
                 For this MVP UI, this is a preview only. In the next iteration we'll connect to our backend and AI engine to provide personalised recommendations.
               </p>
