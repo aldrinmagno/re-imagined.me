@@ -1,13 +1,62 @@
 import { FormEvent, useState } from 'react';
 
+import { getSupabaseClient } from '../lib/supabaseClient';
+
 type SubmissionState = 'idle' | 'submitted';
 
 function SignIn() {
   const [submissionState, setSubmissionState] = useState<SubmissionState>('idle');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmissionState('submitted');
+    if (isSubmitting) {
+      return;
+    }
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const name = formData.get('name')?.toString().trim() ?? '';
+    const email = formData.get('email')?.toString().trim() ?? '';
+    const interests = formData.get('interests')?.toString().trim() ?? '';
+
+    if (!name || !email) {
+      setError('Please provide both your name and email address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const supabase = getSupabaseClient();
+      const { error: submissionError } = await supabase.from('mailing_list_signups').insert({
+        name,
+        email,
+        interests: interests || null
+      });
+
+      if (submissionError) {
+        console.error('Failed to save mailing list signup', submissionError);
+        setError('We could not save your subscription. Please try again.');
+        return;
+      }
+
+      form.reset();
+      setSubmissionState('submitted');
+    } catch (supabaseError) {
+      console.error('Error saving mailing list signup', supabaseError);
+      setError('We are having trouble connecting right now. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const fieldClasses =
@@ -85,11 +134,18 @@ function SignIn() {
                 </p>
               </div>
 
+              {error ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+                  {error}
+                </div>
+              ) : null}
+
               <button
                 type="submit"
-                className="w-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-emerald-200/30 transition hover:shadow-xl hover:shadow-emerald-200/40 focus:outline-none focus:ring-2 focus:ring-emerald-200/40"
+                className="w-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-emerald-200/30 transition hover:shadow-xl hover:shadow-emerald-200/40 focus:outline-none focus:ring-2 focus:ring-emerald-200/40 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSubmitting}
               >
-                Subscribe
+                {isSubmitting ? 'Subscribing…' : 'Subscribe'}
               </button>
 
               <p className="text-sm text-slate-500">
