@@ -148,6 +148,10 @@ function Home() {
       required: true,
       options: [
         {
+          value: 'pioneer',
+          label: 'Chart a path into roles that do not yet exist at scale'
+        },
+        {
           value: 'strengthen',
           label: 'Strengthen and future-proof my current role'
         },
@@ -320,7 +324,8 @@ function Home() {
 
   const goalText = formData.lookingFor === 'strengthen' ? 'Strengthen and future-proof my current role' :
                    formData.lookingFor === 'transition' ? 'Transition to a new role or discipline' :
-                   formData.lookingFor === 'explore' ? 'Explore side projects or additional income streams' : 'your next chapter';
+                   formData.lookingFor === 'explore' ? 'Explore side projects or additional income streams' :
+                   formData.lookingFor === 'pioneer' ? 'Chart a path into roles that do not yet exist at scale' : 'your next chapter';
 
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
@@ -345,16 +350,13 @@ function Home() {
     <div
       className={`${
         isAssessmentMode
-          ? 'min-h-screen h-screen bg-slate-900 text-slate-100'
+          ? 'min-h-screen h-screen bg-slate-900 text-slate-100 absolute w-full'
           : 'min-h-screen bg-slate-50'
       }`}
     >
       {!isAssessmentMode && (
         <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="flex justify-center">
-              <Logo className="justify-center" />
-            </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
               Design your next chapter, not just your next job
           </h1>

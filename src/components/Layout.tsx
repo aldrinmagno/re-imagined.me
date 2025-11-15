@@ -23,12 +23,6 @@ function Layout({ children }: LayoutProps) {
             </Link>
 
             <div className="hidden md:flex space-x-8">
-              <Link to="/how-it-works" className="text-slate-600 hover:text-slate-900 transition">
-                How it works
-              </Link>
-              <Link to="/about" className="text-slate-600 hover:text-slate-900 transition">
-                About
-              </Link>
               <Link to="/sign-in" className="text-slate-600 hover:text-slate-900 transition">
                 Sign in
               </Link>
@@ -83,9 +77,6 @@ function Layout({ children }: LayoutProps) {
               </Link>
               <Link to="/privacy" className="hover:text-slate-900 transition">
                 Terms
-              </Link>
-              <Link to="/contact" className="hover:text-slate-900 transition">
-                Contact
               </Link>
             </div>
             <div className="text-sm text-slate-500">
