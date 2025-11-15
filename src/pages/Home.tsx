@@ -1,18 +1,12 @@
 import { useState, FormEvent, KeyboardEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
+import AssessmentPreview from '../components/AssessmentPreview';
 import { getSupabaseClient } from '../lib/supabaseClient';
-
-interface FormData {
-  jobTitle: string;
-  industry: string;
-  yearsExperience: string;
-  strengths: string;
-  typicalWeek: string;
-  lookingFor: string;
-  workPreferences: string;
-  email: string;
-}
+import {
+  AssessmentFormData,
+  createInitialAssessmentFormData
+} from '../types/assessment';
 
 type StepType = 'input' | 'textarea' | 'select' | 'radio';
 
@@ -27,7 +21,7 @@ type InputModeType =
   | 'search';
 
 interface StepDefinition {
-  id: keyof FormData;
+  id: keyof AssessmentFormData;
   title: string;
   prompt: string;
   type: StepType;
@@ -40,23 +34,14 @@ interface StepDefinition {
   inputType?: string;
 }
 
-const createInitialFormData = (): FormData => ({
-  jobTitle: '',
-  industry: '',
-  yearsExperience: '',
-  strengths: '',
-  typicalWeek: '',
-  lookingFor: '',
-  workPreferences: '',
-  email: ''
-});
-
 function Home() {
   const navigate = useNavigate();
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [isAssessmentActive, setIsAssessmentActive] = useState(false);
   const [hasAssessmentStarted, setHasAssessmentStarted] = useState(false);
-  const [formData, setFormData] = useState<FormData>(() => createInitialFormData());
+  const [formData, setFormData] = useState<AssessmentFormData>(
+    () => createInitialAssessmentFormData()
+  );
   const [currentStep, setCurrentStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
   const [error, setError] = useState('');
@@ -192,7 +177,7 @@ function Home() {
     }
   };
 
-  const getFieldValue = (field: keyof FormData) => formData[field] ?? '';
+  const getFieldValue = (field: keyof AssessmentFormData) => formData[field] ?? '';
 
   const isStepValid = (stepIndex: number) => {
     const step = steps[stepIndex];
@@ -228,7 +213,7 @@ function Home() {
     }
   };
 
-  const handleFieldChange = (field: keyof FormData, value: string) => {
+  const handleFieldChange = (field: keyof AssessmentFormData, value: string) => {
     if (!isAssessmentActive) {
       setHasAssessmentStarted(true);
       setIsAssessmentActive(true);
@@ -362,18 +347,13 @@ function Home() {
     }, 100);
   };
 
-  const goalText = formData.lookingFor === 'strengthen' ? 'Strengthen and future-proof my current role' :
-                   formData.lookingFor === 'transition' ? 'Transition to a new role or discipline' :
-                   formData.lookingFor === 'explore' ? 'Explore side projects or additional income streams' :
-                   formData.lookingFor === 'pioneer' ? 'Chart a path into roles that do not yet exist at scale' : 'your next chapter';
-
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
     setShowSnapshot(false);
     setCurrentStep(0);
     setFurthestStep(0);
     setError('');
-    setFormData(createInitialFormData());
+    setFormData(createInitialAssessmentFormData());
     setHasAssessmentStarted(false);
     setTransitionDirection('forward');
     setStepAnimationKey(0);
@@ -493,8 +473,8 @@ function Home() {
         <div
           className={`${
             isAssessmentMode
-              ? 'w-full max-w-2xl'
-              : 'max-w-3xl mx-auto'
+              ? 'w-full max-w-5xl'
+              : 'max-w-5xl mx-auto'
           }`}
         >
           {!isAssessmentMode && (
@@ -508,15 +488,21 @@ function Home() {
             </div>
           )}
 
-          <form
-            onSubmit={handleSubmit}
-            className={`${
-              isAssessmentMode
-                ? 'rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur p-6 sm:p-10 shadow-2xl'
-                : 'bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-slate-200'
-            } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
-          >
-            <div className="space-y-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+            <div
+              className={`w-full ${
+                isAssessmentMode ? 'lg:w-2/3' : 'lg:w-3/5'
+              }`}
+            >
+              <form
+                onSubmit={handleSubmit}
+                className={`${
+                  isAssessmentMode
+                    ? 'rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur p-6 sm:p-10 shadow-2xl'
+                    : 'bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-slate-200'
+                } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
+              >
+                <div className="space-y-8">
               <div>
                 <div
                   className={`flex items-center justify-between text-xs uppercase tracking-wide ${
@@ -747,55 +733,34 @@ function Home() {
             </div>
           </form>
         </div>
-      </section>
-
-      {showSnapshot && (
-        <section id="snapshot" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-6">
-              Initial snapshot of your next chapter
-            </h2>
-            <p className="text-lg text-slate-700 text-center mb-12 bg-slate-50 p-6 rounded-lg border border-slate-200">
-              You're currently a <strong>{formData.jobTitle}</strong> in <strong>{formData.industry.replace('-', ' ')}</strong>, and you're focused on: <strong>{goalText}</strong>.
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              <div className="bg-blue-50 p-8 rounded-xl border border-blue-200">
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                  How your work may evolve
-                </h3>
-                <p className="text-slate-700">
-                  As new technologies such as AI, automation, and robotics advance, certain tasks in your role may change. In the full version, we'll help you identify which parts of your work are likely to increase in strategic value.
-                </p>
-              </div>
-
-              <div className="bg-emerald-50 p-8 rounded-xl border border-emerald-200">
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                  Potential future directions
-                </h3>
-                <p className="text-slate-700">
-                  We will suggest both established roles and new, emerging opportunities that align with your strengths and industry knowledge — including roles made possible by AI, humanoid robots, 3D printing, AR/VR, and other innovations.
-                </p>
-              </div>
-
-              <div className="bg-amber-50 p-8 rounded-xl border border-amber-200">
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                  Structured next steps
-                </h3>
-                <p className="text-slate-700">
-                  You'll receive a clear, practical 90-day plan outlining skills to focus on, projects to undertake, and ways to position yourself for your next phase.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-slate-100 p-6 rounded-lg border border-slate-300 text-center">
-              <p className="text-slate-700">
-                For this MVP UI, this is a preview only. In the next iteration we'll connect to our backend and AI engine to provide personalised recommendations.
-              </p>
-            </div>
+        {!showSnapshot && (
+          <div
+            className={`w-full ${
+              isAssessmentMode ? 'lg:w-1/3' : 'lg:w-2/5'
+            } lg:sticky lg:top-8 lg:self-start`}
+          >
+            <AssessmentPreview
+              formData={formData}
+              currentStep={currentStep}
+              showSnapshot={showSnapshot}
+            />
           </div>
-        </section>
-      )}
+        )}
+      </div>
+    </div>
+  </section>
+
+  {showSnapshot && (
+    <section id="snapshot" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="max-w-4xl mx-auto">
+        <AssessmentPreview
+          formData={formData}
+          currentStep={currentStep}
+          showSnapshot={showSnapshot}
+        />
+      </div>
+    </section>
+  )}
 
       {!isAssessmentMode && (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
