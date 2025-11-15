@@ -402,14 +402,14 @@ function Home() {
           </div>
           <section className="relative px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
             <div className="mx-auto max-w-5xl text-center">
-              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-sm font-medium text-emerald-700 shadow-sm">
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1 text-sm font-medium text-emerald-700 shadow-sm">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 Guided AI-powered planning for experienced professionals
               </div>
               <h1 className="mt-8 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
                 Design your next chapter, not just your next job
               </h1>
-              <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-600 sm:text-xl">
+              <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-700 sm:text-xl">
                 Capture who you are today, how you work, and where you want to go next as technology reshapes your industry.
               </p>
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -430,7 +430,7 @@ function Home() {
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </a>
               </div>
-              <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-500">
+              <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-600">
                 Built for experienced professionals who want their work to stay meaningful and relevant.
               </p>
             </div>
@@ -446,38 +446,38 @@ function Home() {
               How re-imagined.me supports your next step
             </h2>
             <div className="mt-12 grid gap-8 md:grid-cols-3">
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
                   <CheckCircle size={24} />
                 </div>
                 <h3 className="mt-6 text-xl font-semibold text-slate-900">
                   Clarify your current position
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-slate-700">
                   We map your role, skills, and day-to-day responsibilities.
                 </p>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
                   <TrendingUp size={24} />
                 </div>
                 <h3 className="mt-6 text-xl font-semibold text-slate-900">
                   Explore future-aligned paths
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-slate-700">
                   We highlight roles and emerging opportunities that fit your strengths and ambitions.
                 </p>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
                   <Map size={24} />
                 </div>
                 <h3 className="mt-6 text-xl font-semibold text-slate-900">
                   Define your next steps
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-slate-700">
                   We outline a structured 90-day plan to move toward your next chapter.
                 </p>
               </div>
@@ -501,7 +501,7 @@ function Home() {
           <button
             type="button"
             onClick={handleExitAssessment}
-            className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-emerald-300 hover:text-emerald-600"
+            className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600"
           >
             <X size={16} aria-hidden="true" />
             Exit
@@ -519,7 +519,7 @@ function Home() {
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
                 Start your quick assessment
               </h2>
-              <p className="text-slate-600">
+              <p className="text-slate-700">
                 This is a simplified starting point. We'll later use your answers to generate a more personalised next-chapter roadmap.
               </p>
             </div>
@@ -529,15 +529,15 @@ function Home() {
             onSubmit={handleSubmit}
             className={`${
               isAssessmentMode
-                ? 'rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-2xl shadow-emerald-200/20'
-                : 'rounded-3xl border border-slate-200/70 bg-white/90 backdrop-blur-sm p-6 sm:p-10 shadow-xl shadow-emerald-200/20'
+                ? 'rounded-3xl border border-slate-300 bg-white p-6 sm:p-10 shadow-2xl shadow-emerald-200/20'
+                : 'rounded-3xl border border-slate-300/70 bg-white/90 backdrop-blur-sm p-6 sm:p-10 shadow-xl shadow-emerald-200/20'
             } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
           >
             <div className="space-y-8">
               <div>
                 <div
                   className={`flex items-center justify-between text-xs uppercase tracking-wide ${
-                    isAssessmentMode ? 'text-slate-500' : 'text-slate-500'
+                    isAssessmentMode ? 'text-slate-600' : 'text-slate-600'
                   }`}
                 >
                   <span>Question {currentStep + 1} of {steps.length}</span>
@@ -590,7 +590,7 @@ function Home() {
                     {steps[currentStep].helperText && (
                       <p
                         className={`mt-2 text-sm ${
-                          isAssessmentMode ? 'text-slate-500' : 'text-slate-500'
+                          isAssessmentMode ? 'text-slate-600' : 'text-slate-600'
                         }`}
                       >
                         {steps[currentStep].helperText}
@@ -602,8 +602,8 @@ function Home() {
                       const step = steps[currentStep];
                       const commonInputClasses = `w-full rounded-xl border px-4 py-3 text-base transition focus:outline-none focus:ring-2 focus:border-transparent ${
                         isAssessmentMode
-                          ? 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
-                          : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
+                          ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
+                          : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
                       }`;
 
                       if (step.type === 'input') {
@@ -669,8 +669,8 @@ function Home() {
                                         ? 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
                                         : 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
                                       : isAssessmentMode
-                                        ? 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
-                                        : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
+                                        ? 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
+                                        : 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
                                   }`}
                                 >
                                   <input
@@ -724,8 +724,8 @@ function Home() {
                   className={`w-full sm:w-auto rounded-lg border px-6 py-3 text-sm font-medium transition ${
                     currentStep === 0
                       ? isAssessmentMode
-                        ? 'border-slate-200 text-slate-400 cursor-not-allowed'
-                        : 'border-slate-200 text-slate-400 cursor-not-allowed'
+                        ? 'border-slate-300 text-slate-400 cursor-not-allowed'
+                        : 'border-slate-300 text-slate-400 cursor-not-allowed'
                       : isAssessmentMode
                         ? 'border-slate-300 text-slate-600 hover:border-emerald-300 hover:text-emerald-600'
                         : 'border-slate-300 text-slate-600 hover:border-emerald-300 hover:text-emerald-600'
@@ -773,41 +773,41 @@ function Home() {
             <h2 className="mb-6 text-center text-3xl font-bold text-slate-900 sm:text-4xl">
               Initial snapshot of your next chapter
             </h2>
-            <p className="mb-12 rounded-2xl border border-slate-200 bg-white p-6 text-center text-lg text-slate-700 shadow-sm">
+            <p className="mb-12 rounded-2xl border border-slate-300 bg-white p-6 text-center text-lg text-slate-700 shadow-sm">
               You're currently a <strong>{formData.jobTitle}</strong> in <strong>{formData.industry.replace('-', ' ')}</strong>, and you're focused on: <strong>{goalText}</strong>.
             </p>
 
             <div className="mb-8 grid gap-8 md:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-emerald-200/10">
+              <div className="rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10">
                 <h3 className="mb-3 text-xl font-semibold text-slate-900">
                   How your work may evolve
                 </h3>
-                <p className="text-sm leading-relaxed text-slate-600">
+                <p className="text-sm leading-relaxed text-slate-700">
                   As new technologies such as AI, automation, and robotics advance, certain tasks in your role may change. In the full version, we'll help you identify which parts of your work are likely to increase in strategic value.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-emerald-200/10">
+              <div className="rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10">
                 <h3 className="mb-3 text-xl font-semibold text-slate-900">
                   Potential future directions
                 </h3>
-                <p className="text-sm leading-relaxed text-slate-600">
+                <p className="text-sm leading-relaxed text-slate-700">
                   We will suggest both established roles and new, emerging opportunities that align with your strengths and industry knowledge — including roles made possible by AI, humanoid robots, 3D printing, AR/VR, and other innovations.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-emerald-200/10">
+              <div className="rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10">
                 <h3 className="mb-3 text-xl font-semibold text-slate-900">
                   Structured next steps
                 </h3>
-                <p className="text-sm leading-relaxed text-slate-600">
+                <p className="text-sm leading-relaxed text-slate-700">
                   You'll receive a clear, practical 90-day plan outlining skills to focus on, projects to undertake, and ways to position yourself for your next phase.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-inner shadow-emerald-200/10">
-              <p className="text-sm text-slate-600">
+            <div className="rounded-2xl border border-slate-300 bg-white p-6 text-center shadow-inner shadow-emerald-200/10">
+              <p className="text-sm text-slate-700">
                 For this MVP UI, this is a preview only. In the next iteration we'll connect to our backend and AI engine to provide personalised recommendations.
               </p>
             </div>
@@ -822,7 +822,7 @@ function Home() {
             <h2 className="mb-6 text-3xl font-bold text-slate-900">
               More than a job title
             </h2>
-            <div className="space-y-4 text-lg text-slate-600">
+            <div className="space-y-4 text-lg text-slate-700">
               <p className="leading-relaxed">
                 Your experience, judgment, and relationships are not easily replaced by tools.
               </p>

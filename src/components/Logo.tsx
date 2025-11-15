@@ -22,17 +22,17 @@ function Logo({ variant = 'default', className }: LogoProps) {
         alt="re-imagined.me starburst mark"
         className={mergeClasses(iconSize, 'flex-shrink-0')}
       />
-      <div className="leading-tight text-slate-800">
+      <div className="leading-tight text-slate-900">
         <div
           className={mergeClasses(
             'font-semibold tracking-tight bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 bg-clip-text text-transparent',
             titleClass
           )}
         >
-          re-imagined<span className="text-slate-400">.</span>
+          re-imagined<span className="text-slate-500">.</span>
         </div>
         {showTagline && (
-          <div className="text-base sm:text-lg font-medium text-slate-500">
+          <div className="text-base sm:text-lg font-medium text-slate-600">
             We turn worry into a roadmap.
           </div>
         )}
