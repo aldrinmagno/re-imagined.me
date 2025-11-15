@@ -528,7 +528,7 @@ function Home() {
         <div
           className={`${
             isAssessmentMode
-              ? 'flex w-full max-w-5xl flex-col gap-6 lg:flex-row'
+              ? 'flex w-full max-w-6xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between'
               : 'relative mx-auto max-w-3xl'
           }`}
         >
@@ -834,7 +834,7 @@ function Home() {
           </div>
 
           {isAssessmentMode && (
-            <div className="w-full lg:max-w-sm">
+            <div className="w-full lg:ml-auto lg:max-w-sm lg:self-start lg:pl-10 xl:pl-16">
               <AssessmentPreviewPanel
                 formData={formData}
                 goalText={goalText}
