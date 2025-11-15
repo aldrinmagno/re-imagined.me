@@ -1,17 +1,16 @@
 function Privacy() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      <section className="relative px-4 py-24 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.12),_transparent_65%)]" />
+        <div className="mx-auto max-w-4xl">
+          <h1 className="text-4xl font-bold text-slate-900 sm:text-5xl">
             Privacy Policy
           </h1>
-          <p className="text-xl text-slate-600 mb-12">
-            Re-imagined.me is committed to providing quality services to you and this
-            policy outlines our ongoing obligations to you in respect of how we
-            manage your Personal Information.
+          <p className="mt-6 text-xl text-slate-600">
+            Re-imagined.me is committed to providing quality services to you and this policy outlines our ongoing obligations to you in respect of how we manage your Personal Information.
           </p>
-          <div className="space-y-8 text-slate-700 leading-relaxed">
+          <div className="mt-12 space-y-8 leading-relaxed text-slate-600">
             <p>
               We have adopted the Australian Privacy Principles (APPs) contained in
               the Privacy Act 1988 (Cth) (the Privacy Act). The APPs govern the way in
@@ -21,7 +20,7 @@ function Privacy() {
               Commissioner at{' '}
               <a
                 href="https://www.oaic.gov.au/"
-                className="text-blue-600 hover:text-blue-700 underline"
+                className="text-emerald-600 underline decoration-emerald-300/60 transition hover:text-emerald-500"
               >
                 https://www.oaic.gov.au/
               </a>
@@ -43,7 +42,7 @@ function Privacy() {
                 our website{' '}
                 <a
                   href="https://www.re-imagined.me"
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-emerald-600 underline decoration-emerald-300/60 transition hover:text-emerald-500"
                 >
                   www.re-imagined.me
                 </a>
@@ -174,7 +173,7 @@ function Privacy() {
                 If you have any queries or complaints about our Privacy Policy please
                 contact us at:
               </p>
-              <p className="font-semibold">hello@re-imagined.me</p>
+              <p className="font-semibold text-emerald-600">hello@re-imagined.me</p>
             </div>
           </div>
         </div>

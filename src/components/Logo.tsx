@@ -5,9 +5,6 @@ interface LogoProps {
   className?: string;
 }
 
-const accentColor = '#0F4C5C';
-const taglineColor = '#1F7A8C';
-
 function mergeClasses(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
@@ -25,12 +22,17 @@ function Logo({ variant = 'default', className }: LogoProps) {
         alt="re-imagined.me starburst mark"
         className={mergeClasses(iconSize, 'flex-shrink-0')}
       />
-      <div className="leading-tight">
-        <div className={mergeClasses('font-semibold tracking-tight', titleClass)} style={{ color: accentColor }}>
-          re-imagined<span style={{ color: accentColor }}>.</span>
+      <div className="leading-tight text-slate-800">
+        <div
+          className={mergeClasses(
+            'font-semibold tracking-tight bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 bg-clip-text text-transparent',
+            titleClass
+          )}
+        >
+          re-imagined<span className="text-slate-400">.</span>
         </div>
         {showTagline && (
-          <div className="text-base sm:text-lg font-medium" style={{ color: taglineColor }}>
+          <div className="text-base sm:text-lg font-medium text-slate-500">
             We turn worry into a roadmap.
           </div>
         )}
