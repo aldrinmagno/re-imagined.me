@@ -365,6 +365,11 @@ function Home() {
                    formData.lookingFor === 'explore' ? 'Explore side projects or additional income streams' :
                    formData.lookingFor === 'pioneer' ? 'Chart a path into roles that do not yet exist at scale' : 'your next chapter';
 
+  const currentStepDefinition = steps[currentStep];
+  const currentInputId = `assessment-${currentStepDefinition.id}`;
+  const currentPromptId = `${currentInputId}-prompt`;
+  const currentHelperTextId = currentStepDefinition.helperText ? `${currentInputId}-helper` : undefined;
+
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
     setShowSnapshot(false);
@@ -581,25 +586,27 @@ function Home() {
                 >
                   <div>
                     <h3
+                      id={currentPromptId}
                       className={`text-2xl sm:text-3xl font-semibold ${
                         isAssessmentMode ? 'text-slate-900' : 'text-slate-900'
                       }`}
                     >
-                      {steps[currentStep].prompt}
+                      {currentStepDefinition.prompt}
                     </h3>
-                    {steps[currentStep].helperText && (
+                    {currentStepDefinition.helperText && (
                       <p
+                        id={currentHelperTextId}
                         className={`mt-2 text-sm ${
                           isAssessmentMode ? 'text-slate-600' : 'text-slate-600'
                         }`}
                       >
-                        {steps[currentStep].helperText}
+                        {currentStepDefinition.helperText}
                       </p>
                     )}
                   </div>
                   <div>
                     {(() => {
-                      const step = steps[currentStep];
+                      const step = currentStepDefinition;
                       const commonInputClasses = `w-full rounded-xl border px-4 py-3 text-base transition focus:outline-none focus:ring-2 focus:border-transparent ${
                         isAssessmentMode
                           ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
@@ -608,62 +615,89 @@ function Home() {
 
                       if (step.type === 'input') {
                         return (
-                          <input
-                            type={step.inputType ?? 'text'}
-                            inputMode={step.inputMode}
-                            value={getFieldValue(step.id)}
-                            onChange={(event) => handleFieldChange(step.id, event.target.value)}
-                            onKeyDown={handleEnterKey}
-                            placeholder={step.placeholder}
-                            className={commonInputClasses}
-                            min={step.inputType === 'number' ? 0 : undefined}
-                          />
+                          <>
+                            <label htmlFor={currentInputId} className="sr-only">
+                              {step.prompt}
+                            </label>
+                            <input
+                              id={currentInputId}
+                              type={step.inputType ?? 'text'}
+                              inputMode={step.inputMode}
+                              value={getFieldValue(step.id)}
+                              onChange={(event) => handleFieldChange(step.id, event.target.value)}
+                              onKeyDown={handleEnterKey}
+                              placeholder={step.placeholder}
+                              className={commonInputClasses}
+                              min={step.inputType === 'number' ? 0 : undefined}
+                              aria-describedby={currentHelperTextId}
+                            />
+                          </>
                         );
                       }
 
                       if (step.type === 'textarea') {
                         return (
-                          <textarea
-                            value={getFieldValue(step.id)}
-                            onChange={(event) => handleFieldChange(step.id, event.target.value)}
-                            placeholder={step.placeholder}
-                            rows={step.rows ?? 4}
-                            className={commonInputClasses}
-                          />
+                          <>
+                            <label htmlFor={currentInputId} className="sr-only">
+                              {step.prompt}
+                            </label>
+                            <textarea
+                              id={currentInputId}
+                              value={getFieldValue(step.id)}
+                              onChange={(event) => handleFieldChange(step.id, event.target.value)}
+                              placeholder={step.placeholder}
+                              rows={step.rows ?? 4}
+                              className={commonInputClasses}
+                              aria-describedby={currentHelperTextId}
+                            />
+                          </>
                         );
                       }
 
                       if (step.type === 'select' && step.options) {
                         return (
-                          <select
-                            value={getFieldValue(step.id)}
-                            onChange={(event) => {
-                              handleFieldChange(step.id, event.target.value);
-                              if (event.target.value) {
-                                maybeAutoAdvance();
-                              }
-                            }}
-                            className={`${commonInputClasses} appearance-none`}
-                          >
-                            <option value="">{step.placeholder ?? 'Select an option'}</option>
-                            {step.options.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
+                          <>
+                            <label htmlFor={currentInputId} className="sr-only">
+                              {step.prompt}
+                            </label>
+                            <select
+                              id={currentInputId}
+                              value={getFieldValue(step.id)}
+                              onChange={(event) => {
+                                handleFieldChange(step.id, event.target.value);
+                                if (event.target.value) {
+                                  maybeAutoAdvance();
+                                }
+                              }}
+                              className={`${commonInputClasses} appearance-none`}
+                              aria-describedby={currentHelperTextId}
+                            >
+                              <option value="">{step.placeholder ?? 'Select an option'}</option>
+                              {step.options.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </>
                         );
                       }
 
                       if (step.type === 'radio' && step.options) {
                         return (
-                          <div className="space-y-3">
+                          <fieldset
+                            className="space-y-3"
+                            aria-describedby={currentHelperTextId}
+                          >
+                            <legend className="sr-only">{step.prompt}</legend>
                             {step.options.map((option) => {
+                              const optionId = `${currentInputId}-${option.value}`;
                               const isSelected = getFieldValue(step.id) === option.value;
                               return (
                                 <label
                                   key={option.value}
-                                className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
+                                  htmlFor={optionId}
+                                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
                                     isSelected
                                       ? isAssessmentMode
                                         ? 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
@@ -674,6 +708,7 @@ function Home() {
                                   }`}
                                 >
                                   <input
+                                    id={optionId}
                                     type="radio"
                                     name={step.id}
                                     value={option.value}
@@ -694,7 +729,7 @@ function Home() {
                                 </label>
                               );
                             })}
-                          </div>
+                          </fieldset>
                         );
                       }
 
