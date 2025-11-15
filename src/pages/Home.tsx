@@ -528,11 +528,17 @@ function Home() {
         <div
           className={`${
             isAssessmentMode
-              ? 'flex w-full max-w-6xl flex-col gap-8 lg:flex-row lg:items-start lg:justify-between'
+              ? 'flex w-full max-w-6xl flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start'
               : 'relative mx-auto max-w-3xl'
           }`}
         >
-          <div className={`${isAssessmentMode ? 'flex-1' : 'w-full'}`}>
+          <div
+            className={`${
+              isAssessmentMode
+                ? 'flex w-full justify-center'
+                : 'w-full'
+            }`}
+          >
             {!isAssessmentMode && (
               <div className="mb-12 text-center">
                 <h2 className="mb-4 text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -548,7 +554,7 @@ function Home() {
               onSubmit={handleSubmit}
               className={`${
                 isAssessmentMode
-                  ? 'rounded-3xl border border-slate-300 bg-white p-6 sm:p-10 shadow-2xl shadow-emerald-200/20'
+                  ? 'mx-auto w-full max-w-2xl rounded-3xl border border-slate-300 bg-white p-6 sm:p-10 shadow-2xl shadow-emerald-200/20'
                   : 'rounded-3xl border border-slate-300/70 bg-white/90 backdrop-blur-sm p-6 sm:p-10 shadow-xl shadow-emerald-200/20'
               } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
             >
@@ -834,7 +840,7 @@ function Home() {
           </div>
 
           {isAssessmentMode && (
-            <div className="w-full lg:ml-auto lg:max-w-sm lg:self-start lg:pl-10 xl:pl-16">
+            <div className="w-full lg:mt-16 lg:ml-0 lg:max-w-sm lg:justify-self-end">
               <AssessmentPreviewPanel
                 formData={formData}
                 goalText={goalText}
