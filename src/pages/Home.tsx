@@ -528,14 +528,14 @@ function Home() {
         <div
           className={`${
             isAssessmentMode
-              ? 'flex w-full max-w-6xl flex-col'
+              ? 'relative mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'
               : 'relative mx-auto max-w-3xl'
           }`}
         >
           <div
             className={`${
               isAssessmentMode
-                ? 'flex w-full justify-center'
+                ? 'order-1 flex w-full justify-center lg:order-1'
                 : 'w-full'
             }`}
           >
@@ -839,10 +839,8 @@ function Home() {
             </form>
           </div>
 
-          
-        </div>
-        {isAssessmentMode && (
-            <div className="absolute w-full lg:mt-16 lg:ml-0 lg:max-w-sm lg:justify-self-end">
+          {isAssessmentMode && (
+            <div className="order-2 mt-8 w-full self-start lg:order-2 lg:mt-0 lg:sticky lg:top-24 lg:max-w-sm lg:justify-self-end">
               <AssessmentPreviewPanel
                 formData={formData}
                 goalText={goalText}
@@ -851,6 +849,7 @@ function Home() {
               />
             </div>
           )}
+        </div>
       </section>
 
       {showSnapshot && (
