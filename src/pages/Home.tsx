@@ -1,4 +1,4 @@
-import { useState, FormEvent, KeyboardEvent, useEffect } from 'react';
+import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabaseClient';
 
@@ -61,6 +61,8 @@ function Home() {
   const [stepAnimationKey, setStepAnimationKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
@@ -182,6 +184,20 @@ function Home() {
       placeholder: 'your.email@example.com'
     }
   ];
+
+  const currentStepDefinition = steps[currentStep];
+  const currentInputId = `assessment-${currentStepDefinition.id}`;
+  const currentPromptId = `${currentInputId}-prompt`;
+  const currentHelperTextId = currentStepDefinition.helperText ? `${currentInputId}-helper` : undefined;
+
+  useEffect(() => {
+    if (!isAssessmentMode) {
+      return;
+    }
+
+    const element = interactiveRefs.current[currentStepDefinition.id];
+    element?.focus();
+  }, [currentStepDefinition.id, isAssessmentMode]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -365,11 +381,6 @@ function Home() {
                    formData.lookingFor === 'explore' ? 'Explore side projects or additional income streams' :
                    formData.lookingFor === 'pioneer' ? 'Chart a path into roles that do not yet exist at scale' : 'your next chapter';
 
-  const currentStepDefinition = steps[currentStep];
-  const currentInputId = `assessment-${currentStepDefinition.id}`;
-  const currentPromptId = `${currentInputId}-prompt`;
-  const currentHelperTextId = currentStepDefinition.helperText ? `${currentInputId}-helper` : undefined;
-
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
     setShowSnapshot(false);
@@ -539,6 +550,11 @@ function Home() {
             } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
           >
             <div className="space-y-8">
+              {isAssessmentMode && (
+                <div aria-live="polite" className="sr-only" key={currentStepDefinition.id}>
+                  {currentStepDefinition.prompt}
+                </div>
+              )}
               <div>
                 <div
                   className={`flex items-center justify-between text-xs uppercase tracking-wide ${
@@ -630,6 +646,9 @@ function Home() {
                               className={commonInputClasses}
                               min={step.inputType === 'number' ? 0 : undefined}
                               aria-describedby={currentHelperTextId}
+                              ref={(element: HTMLInputElement | null) => {
+                                interactiveRefs.current[step.id] = element;
+                              }}
                             />
                           </>
                         );
@@ -649,6 +668,9 @@ function Home() {
                               rows={step.rows ?? 4}
                               className={commonInputClasses}
                               aria-describedby={currentHelperTextId}
+                              ref={(element: HTMLTextAreaElement | null) => {
+                                interactiveRefs.current[step.id] = element;
+                              }}
                             />
                           </>
                         );
@@ -671,6 +693,9 @@ function Home() {
                               }}
                               className={`${commonInputClasses} appearance-none`}
                               aria-describedby={currentHelperTextId}
+                              ref={(element: HTMLSelectElement | null) => {
+                                interactiveRefs.current[step.id] = element;
+                              }}
                             >
                               <option value="">{step.placeholder ?? 'Select an option'}</option>
                               {step.options.map((option) => (
@@ -690,7 +715,7 @@ function Home() {
                             aria-describedby={currentHelperTextId}
                           >
                             <legend className="sr-only">{step.prompt}</legend>
-                            {step.options.map((option) => {
+                            {step.options.map((option, optionIndex) => {
                               const optionId = `${currentInputId}-${option.value}`;
                               const isSelected = getFieldValue(step.id) === option.value;
                               return (
@@ -722,6 +747,11 @@ function Home() {
                                         ? 'text-emerald-500 focus:ring-emerald-200'
                                         : 'text-emerald-500 focus:ring-emerald-200'
                                     }`}
+                                    ref={(element: HTMLInputElement | null) => {
+                                      if (optionIndex === 0) {
+                                        interactiveRefs.current[step.id] = element;
+                                      }
+                                    }}
                                   />
                                   <span className="text-slate-800">
                                     {option.label}
