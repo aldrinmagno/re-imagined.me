@@ -1,7 +1,7 @@
 import { useState, FormEvent, KeyboardEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
-import Logo from '../components/Logo';
+import { getSupabaseClient } from '../lib/supabaseClient';
 
 interface FormData {
   jobTitle: string;
@@ -62,6 +62,7 @@ function Home() {
   const [error, setError] = useState('');
   const [stepAnimationKey, setStepAnimationKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
@@ -291,8 +292,12 @@ function Home() {
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
 
     if (!isStepValid(currentStep)) {
       setError('Please complete this question before continuing.');
@@ -301,21 +306,56 @@ function Home() {
 
     if (!formData.jobTitle || !formData.industry || !formData.yearsExperience ||
         !formData.strengths || !formData.email || !formData.lookingFor) {
-      alert('Please fill in all required fields');
+      setError('Please fill in all required fields before submitting.');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      alert('Please enter a valid email address');
+      setError('Please enter a valid email address.');
       return;
     }
 
-    console.log('Form submitted:', formData);
+    setError('');
+    setIsSubmitting(true);
+
+    const yearsExperienceValue = Number.parseInt(formData.yearsExperience, 10);
+    if (Number.isNaN(yearsExperienceValue) || yearsExperienceValue < 0) {
+      setError('Please enter a valid number of years of experience.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const supabase = getSupabaseClient();
+      const { error: submissionError } = await supabase.from('assessment_responses').insert({
+        job_title: formData.jobTitle,
+        industry: formData.industry,
+        years_experience: yearsExperienceValue,
+        strengths: formData.strengths,
+        typical_week: formData.typicalWeek || null,
+        looking_for: formData.lookingFor,
+        work_preferences: formData.workPreferences || null,
+        email: formData.email,
+        submitted_at: new Date().toISOString()
+      });
+
+      if (submissionError) {
+        console.error('Failed to save assessment response', submissionError);
+        setError('We couldn\'t save your answers. Please try again.');
+        return;
+      }
+    } catch (supabaseError) {
+      console.error('Error saving assessment response', supabaseError);
+      setError('We\'re having trouble connecting right now. Please try again later.');
+      return;
+    } finally {
+      setIsSubmitting(false);
+    }
+
     setShowSnapshot(true);
     setIsAssessmentActive(false);
     setHasAssessmentStarted(false);
-    setError('');
 
     setTimeout(() => {
       scrollToSection('snapshot');
@@ -337,6 +377,7 @@ function Home() {
     setHasAssessmentStarted(false);
     setTransitionDirection('forward');
     setStepAnimationKey(0);
+    setIsSubmitting(false);
   };
 
   const startAssessment = () => {
@@ -685,9 +726,9 @@ function Home() {
                         ? 'bg-white text-slate-900 hover:bg-slate-200 disabled:bg-slate-500 disabled:text-slate-300'
                         : 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-300'
                     }`}
-                    disabled={!isStepValid(currentStep)}
+                    disabled={!isStepValid(currentStep) || isSubmitting}
                   >
-                    Generate my snapshot
+                    {isSubmitting ? 'Saving your answers…' : 'Generate my snapshot'}
                   </button>
                 ) : (
                   <button
