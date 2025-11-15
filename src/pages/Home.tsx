@@ -389,7 +389,7 @@ function Home() {
     <div
       className={`${
         isAssessmentMode
-          ? 'relative min-h-screen h-screen w-full bg-slate-100 text-slate-900'
+          ? 'absolute min-h-screen h-screen w-full bg-slate-100 text-slate-900'
           : 'relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900'
       }`}
     >
