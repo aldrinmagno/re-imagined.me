@@ -1,17 +1,16 @@
 function Privacy() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <section className="relative px-4 py-24 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(94,252,232,0.1),_transparent_65%)]" />
+        <div className="mx-auto max-w-4xl">
+          <h1 className="text-4xl font-bold text-white sm:text-5xl">
             Privacy Policy
           </h1>
-          <p className="text-xl text-slate-600 mb-12">
-            Re-imagined.me is committed to providing quality services to you and this
-            policy outlines our ongoing obligations to you in respect of how we
-            manage your Personal Information.
+          <p className="mt-6 text-xl text-slate-300">
+            Re-imagined.me is committed to providing quality services to you and this policy outlines our ongoing obligations to you in respect of how we manage your Personal Information.
           </p>
-          <div className="space-y-8 text-slate-700 leading-relaxed">
+          <div className="mt-12 space-y-8 leading-relaxed text-slate-300">
             <p>
               We have adopted the Australian Privacy Principles (APPs) contained in
               the Privacy Act 1988 (Cth) (the Privacy Act). The APPs govern the way in
@@ -21,7 +20,7 @@ function Privacy() {
               Commissioner at{' '}
               <a
                 href="https://www.oaic.gov.au/"
-                className="text-blue-600 hover:text-blue-700 underline"
+                className="text-emerald-200 underline decoration-emerald-300/60 transition hover:text-emerald-100"
               >
                 https://www.oaic.gov.au/
               </a>
@@ -29,7 +28,7 @@ function Privacy() {
             </p>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 What is Personal Information and why do we collect it?
               </h2>
               <p>
@@ -43,7 +42,7 @@ function Privacy() {
                 our website{' '}
                 <a
                   href="https://www.re-imagined.me"
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-emerald-200 underline decoration-emerald-300/60 transition hover:text-emerald-100"
                 >
                   www.re-imagined.me
                 </a>
@@ -68,7 +67,7 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 Sensitive Information
               </h2>
               <p>
@@ -88,7 +87,7 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">Third Parties</h2>
+              <h2 className="text-2xl font-semibold text-white">Third Parties</h2>
               <p>
                 Where reasonable and practicable to do so, we will collect your
                 Personal Information only from you. However, in some circumstances we
@@ -99,7 +98,7 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 Disclosure of Personal Information
               </h2>
               <p>Your Personal Information may be disclosed in a number of circumstances including the following:</p>
@@ -110,7 +109,7 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 Security of Personal Information
               </h2>
               <p>
@@ -128,7 +127,7 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 Access to your Personal Information
               </h2>
               <p>
@@ -148,7 +147,7 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 Maintaining the Quality of your Personal Information
               </h2>
               <p>
@@ -162,19 +161,19 @@ function Privacy() {
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">Policy Updates</h2>
+              <h2 className="text-2xl font-semibold text-white">Policy Updates</h2>
               <p>This Policy may change from time to time and is available on our website.</p>
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-slate-900">
+              <h2 className="text-2xl font-semibold text-white">
                 Privacy Policy Complaints and Enquiries
               </h2>
               <p>
                 If you have any queries or complaints about our Privacy Policy please
                 contact us at:
               </p>
-              <p className="font-semibold">hello@re-imagined.me</p>
+              <p className="font-semibold text-emerald-200">hello@re-imagined.me</p>
             </div>
           </div>
         </div>

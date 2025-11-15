@@ -1,5 +1,4 @@
 import { useState, FormEvent, KeyboardEvent, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabaseClient';
 
@@ -52,7 +51,6 @@ const createInitialFormData = (): FormData => ({
 });
 
 function Home() {
-  const navigate = useNavigate();
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [isAssessmentActive, setIsAssessmentActive] = useState(false);
   const [hasAssessmentStarted, setHasAssessmentStarted] = useState(false);
@@ -391,84 +389,100 @@ function Home() {
     <div
       className={`${
         isAssessmentMode
-          ? 'min-h-screen h-screen bg-slate-900 text-slate-100 absolute w-full'
-          : 'min-h-screen bg-slate-50'
+          ? 'relative min-h-screen h-screen w-full bg-slate-900 text-slate-100'
+          : 'relative min-h-screen overflow-hidden bg-slate-950 text-slate-100'
       }`}
     >
       {!isAssessmentMode && (
-        <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              Design your next chapter, not just your next job
-          </h1>
-          <p className="text-xl sm:text-2xl text-slate-600 mb-8 max-w-3xl mx-auto">
-            Capture who you are today, how you work, and where you want to go next as technology reshapes your industry.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={startAssessment}
-              className="bg-slate-900 text-white px-8 py-4 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center gap-2 w-full sm:w-auto justify-center"
-            >
-              Start your assessment
-              <ArrowRight size={20} />
-            </button>
-            <a href="#how-it-works"
-              className="text-slate-700 hover:text-slate-900 transition font-medium"
-            >
-              How does this work?
-            </a>
+        <>
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-48 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-400/30 blur-3xl" />
+            <div className="absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-indigo-500/30 blur-3xl" />
+            <div className="absolute bottom-16 left-12 h-48 w-48 rounded-full bg-sky-400/20 blur-3xl" />
           </div>
-          <p className="mt-8 text-sm text-slate-500">
-            Built for experienced professionals who want their work to stay meaningful and relevant.
-          </p>
-        </div>
-        </section>
+          <section className="relative px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+            <div className="mx-auto max-w-5xl text-center">
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-sm font-medium text-emerald-200/90 shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                Guided AI-powered planning for experienced professionals
+              </div>
+              <h1 className="mt-8 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+                Design your next chapter, not just your next job
+              </h1>
+              <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-300 sm:text-xl">
+                Capture who you are today, how you work, and where you want to go next as technology reshapes your industry.
+              </p>
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <button
+                  onClick={startAssessment}
+                  className="w-full rounded-full bg-gradient-to-r from-emerald-300 via-sky-300 to-indigo-300 px-10 py-4 text-base font-semibold text-slate-900 shadow-lg shadow-emerald-300/30 transition hover:shadow-xl hover:shadow-emerald-200/40 sm:w-auto"
+                >
+                  <span className="inline-flex items-center justify-center gap-2">
+                    Start your assessment
+                    <ArrowRight size={20} />
+                  </span>
+                </button>
+                <a
+                  href="#how-it-works"
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-200 transition hover:text-emerald-200"
+                >
+                  How does this work?
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                </a>
+              </div>
+              <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-400">
+                Built for experienced professionals who want their work to stay meaningful and relevant.
+              </p>
+            </div>
+          </section>
+        </>
       )}
 
       {!isAssessmentMode && (
-        <section id="how-it-works" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-12">
+        <section id="how-it-works" className="relative bg-slate-950/90 px-4 py-24 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(94,252,232,0.08),_transparent_60%)]" />
+          <div className="mx-auto max-w-6xl">
+            <h2 className="text-center text-3xl font-bold text-white sm:text-4xl">
               How re-imagined.me supports your next step
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-slate-50 p-8 rounded-xl border border-slate-200">
-              <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <CheckCircle className="text-blue-600" size={24} />
+            </h2>
+            <div className="mt-12 grid gap-8 md:grid-cols-3">
+              <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/40 hover:shadow-emerald-200/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-300/20 text-emerald-200">
+                  <CheckCircle size={24} />
+                </div>
+                <h3 className="mt-6 text-xl font-semibold text-white">
+                  Clarify your current position
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  We map your role, skills, and day-to-day responsibilities.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                Clarify your current position
-              </h3>
-              <p className="text-slate-600">
-                We map your role, skills, and day-to-day responsibilities.
-              </p>
-            </div>
 
-            <div className="bg-slate-50 p-8 rounded-xl border border-slate-200">
-              <div className="bg-emerald-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <TrendingUp className="text-emerald-600" size={24} />
+              <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/40 hover:shadow-emerald-200/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-300/20 text-sky-200">
+                  <TrendingUp size={24} />
+                </div>
+                <h3 className="mt-6 text-xl font-semibold text-white">
+                  Explore future-aligned paths
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  We highlight roles and emerging opportunities that fit your strengths and ambitions.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                Explore future-aligned paths
-              </h3>
-              <p className="text-slate-600">
-                We highlight roles and emerging opportunities that fit your strengths and ambitions.
-              </p>
-            </div>
 
-            <div className="bg-slate-50 p-8 rounded-xl border border-slate-200">
-              <div className="bg-amber-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <Map className="text-amber-600" size={24} />
+              <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/40 hover:shadow-emerald-200/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-300/20 text-indigo-200">
+                  <Map size={24} />
+                </div>
+                <h3 className="mt-6 text-xl font-semibold text-white">
+                  Define your next steps
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  We outline a structured 90-day plan to move toward your next chapter.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                Define your next steps
-              </h3>
-              <p className="text-slate-600">
-                We outline a structured 90-day plan to move toward your next chapter.
-              </p>
             </div>
           </div>
-        </div>
         </section>
       )}
 
@@ -477,9 +491,12 @@ function Home() {
         className={`${
           isAssessmentMode
             ? 'relative flex min-h-screen items-center justify-center px-4 sm:px-6 lg:px-8'
-            : 'py-16 px-4 sm:px-6 lg:px-8 bg-slate-50'
+            : 'relative px-4 py-24 sm:px-6 lg:px-8'
         }`}
       >
+        {!isAssessmentMode && (
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_rgba(115,110,254,0.12),_transparent_65%)]" />
+        )}
         {isAssessmentMode && (
           <button
             type="button"
@@ -494,15 +511,15 @@ function Home() {
           className={`${
             isAssessmentMode
               ? 'w-full max-w-2xl'
-              : 'max-w-3xl mx-auto'
+              : 'relative mx-auto max-w-3xl'
           }`}
         >
           {!isAssessmentMode && (
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Start your quick assessment
               </h2>
-              <p className="text-slate-600">
+              <p className="text-slate-300">
                 This is a simplified starting point. We'll later use your answers to generate a more personalised next-chapter roadmap.
               </p>
             </div>
@@ -512,15 +529,15 @@ function Home() {
             onSubmit={handleSubmit}
             className={`${
               isAssessmentMode
-                ? 'rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur p-6 sm:p-10 shadow-2xl'
-                : 'bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-slate-200'
+                ? 'rounded-3xl border border-white/20 bg-slate-900/80 backdrop-blur-xl p-6 sm:p-10 shadow-2xl shadow-black/40'
+                : 'rounded-3xl border border-white/10 bg-white/5 backdrop-blur-lg p-6 sm:p-10 text-slate-100 shadow-xl shadow-emerald-200/10'
             } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
           >
             <div className="space-y-8">
               <div>
                 <div
                   className={`flex items-center justify-between text-xs uppercase tracking-wide ${
-                    isAssessmentMode ? 'text-slate-400' : 'text-slate-500'
+                    isAssessmentMode ? 'text-slate-400' : 'text-slate-300'
                   }`}
                 >
                   <span>Question {currentStep + 1} of {steps.length}</span>
@@ -541,14 +558,14 @@ function Home() {
                           isActive
                             ? isAssessmentMode
                               ? 'bg-white'
-                              : 'bg-slate-900'
+                              : 'bg-emerald-300'
                             : isComplete
                               ? isAssessmentMode
                                 ? 'bg-slate-300'
-                                : 'bg-emerald-500'
+                                : 'bg-emerald-200'
                               : isAssessmentMode
                                 ? 'bg-slate-700'
-                                : 'bg-slate-300'
+                                : 'bg-white/40'
                         } ${!isAccessible ? 'opacity-40 cursor-not-allowed' : 'hover:scale-110'}`}
                         aria-label={`Go to question ${index + 1}`}
                       />
@@ -565,7 +582,7 @@ function Home() {
                   <div>
                     <h3
                       className={`text-2xl sm:text-3xl font-semibold ${
-                        isAssessmentMode ? 'text-white' : 'text-slate-900'
+                        isAssessmentMode ? 'text-white' : 'text-white'
                       }`}
                     >
                       {steps[currentStep].prompt}
@@ -573,7 +590,7 @@ function Home() {
                     {steps[currentStep].helperText && (
                       <p
                         className={`mt-2 text-sm ${
-                          isAssessmentMode ? 'text-slate-400' : 'text-slate-500'
+                          isAssessmentMode ? 'text-slate-400' : 'text-slate-300'
                         }`}
                       >
                         {steps[currentStep].helperText}
@@ -583,10 +600,10 @@ function Home() {
                   <div>
                     {(() => {
                       const step = steps[currentStep];
-                      const commonInputClasses = `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-base ${
+                      const commonInputClasses = `w-full rounded-xl border px-4 py-3 text-base transition focus:outline-none focus:ring-2 focus:border-transparent ${
                         isAssessmentMode
-                          ? 'bg-slate-800/80 border-slate-700 text-white placeholder-slate-400 focus:ring-white'
-                          : 'border-slate-300 focus:ring-slate-900'
+                          ? 'border-white/10 bg-slate-900/70 text-white placeholder-slate-400 focus:ring-emerald-200/70'
+                          : 'border-white/10 bg-slate-900/50 text-white placeholder-slate-400 focus:ring-emerald-200/70'
                       }`;
 
                       if (step.type === 'input') {
@@ -626,7 +643,7 @@ function Home() {
                                 maybeAutoAdvance();
                               }
                             }}
-                            className={`${commonInputClasses} ${isAssessmentMode ? 'bg-slate-800/80 text-white' : 'bg-white'}`}
+                            className={`${commonInputClasses} appearance-none`}
                           >
                             <option value="">{step.placeholder ?? 'Select an option'}</option>
                             {step.options.map((option) => (
@@ -649,11 +666,11 @@ function Home() {
                                   className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
                                     isSelected
                                       ? isAssessmentMode
-                                        ? 'border-white/70 bg-white/5'
-                                        : 'border-slate-900 bg-slate-900/5'
+                                        ? 'border-white/60 bg-white/10 shadow-inner shadow-white/5'
+                                        : 'border-emerald-200/80 bg-emerald-300/10 shadow-inner shadow-emerald-200/10'
                                       : isAssessmentMode
-                                        ? 'border-slate-700 hover:border-slate-500'
-                                        : 'border-slate-200 hover:border-slate-900'
+                                        ? 'border-white/10 hover:border-emerald-200/50'
+                                        : 'border-white/10 hover:border-emerald-200/60'
                                   }`}
                                 >
                                   <input
@@ -667,11 +684,11 @@ function Home() {
                                     }}
                                     className={`mt-1 focus:ring-2 ${
                                       isAssessmentMode
-                                        ? 'text-white focus:ring-white'
-                                        : 'text-slate-900 focus:ring-slate-900'
+                                        ? 'text-white focus:ring-emerald-200'
+                                        : 'text-emerald-200 focus:ring-emerald-200'
                                     }`}
                                   />
-                                  <span className={isAssessmentMode ? 'text-slate-100' : 'text-slate-700'}>
+                                  <span className="text-slate-100">
                                     {option.label}
                                   </span>
                                 </label>
@@ -692,7 +709,7 @@ function Home() {
                   className={`rounded-lg border px-4 py-3 text-sm ${
                     isAssessmentMode
                       ? 'border-red-500/60 bg-red-500/10 text-red-200'
-                      : 'border-red-200 bg-red-50 text-red-700'
+                      : 'border-red-400/40 bg-red-500/10 text-red-200'
                   }`}
                 >
                   {error}
@@ -708,10 +725,10 @@ function Home() {
                     currentStep === 0
                       ? isAssessmentMode
                         ? 'border-slate-700 text-slate-600 cursor-not-allowed'
-                        : 'border-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'border-white/10 text-slate-500 cursor-not-allowed'
                       : isAssessmentMode
-                        ? 'border-slate-700 text-slate-200 hover:border-slate-500 hover:text-white'
-                        : 'border-slate-300 text-slate-700 hover:border-slate-900 hover:text-slate-900'
+                        ? 'border-white/20 text-slate-200 hover:border-emerald-200/60 hover:text-white'
+                        : 'border-white/10 text-slate-100 hover:border-emerald-200/60 hover:text-emerald-100'
                   }`}
                 >
                   Previous question
@@ -723,7 +740,7 @@ function Home() {
                     className={`w-full sm:w-auto rounded-lg px-6 py-3 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed ${
                       isAssessmentMode
                         ? 'bg-white text-slate-900 hover:bg-slate-200 disabled:bg-slate-500 disabled:text-slate-300'
-                        : 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-300'
+                        : 'bg-gradient-to-r from-emerald-300 via-sky-300 to-indigo-300 text-slate-900 shadow-lg shadow-emerald-300/20 hover:shadow-xl hover:shadow-emerald-200/30 disabled:bg-slate-500/40 disabled:text-slate-300'
                     }`}
                     disabled={!isStepValid(currentStep) || isSubmitting}
                   >
@@ -737,7 +754,7 @@ function Home() {
                     className={`w-full sm:w-auto rounded-lg px-6 py-3 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed ${
                       isAssessmentMode
                         ? 'bg-white text-slate-900 hover:bg-slate-200 disabled:bg-slate-500 disabled:text-slate-300'
-                        : 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-300'
+                        : 'bg-gradient-to-r from-emerald-300 via-sky-300 to-indigo-300 text-slate-900 shadow-lg shadow-emerald-300/20 hover:shadow-xl hover:shadow-emerald-200/30 disabled:bg-slate-500/40 disabled:text-slate-300'
                     }`}
                   >
                     Next question
@@ -750,46 +767,47 @@ function Home() {
       </section>
 
       {showSnapshot && (
-        <section id="snapshot" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <section id="snapshot" className="relative bg-slate-950/80 px-4 py-24 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(94,252,232,0.1),_transparent_60%)]" />
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-6">
+            <h2 className="mb-6 text-center text-3xl font-bold text-white sm:text-4xl">
               Initial snapshot of your next chapter
             </h2>
-            <p className="text-lg text-slate-700 text-center mb-12 bg-slate-50 p-6 rounded-lg border border-slate-200">
+            <p className="mb-12 rounded-2xl border border-white/10 bg-white/5 p-6 text-center text-lg text-slate-200">
               You're currently a <strong>{formData.jobTitle}</strong> in <strong>{formData.industry.replace('-', ' ')}</strong>, and you're focused on: <strong>{goalText}</strong>.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              <div className="bg-blue-50 p-8 rounded-xl border border-blue-200">
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">
+            <div className="mb-8 grid gap-8 md:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-emerald-200/10">
+                <h3 className="mb-3 text-xl font-semibold text-white">
                   How your work may evolve
                 </h3>
-                <p className="text-slate-700">
+                <p className="text-sm leading-relaxed text-slate-200">
                   As new technologies such as AI, automation, and robotics advance, certain tasks in your role may change. In the full version, we'll help you identify which parts of your work are likely to increase in strategic value.
                 </p>
               </div>
 
-              <div className="bg-emerald-50 p-8 rounded-xl border border-emerald-200">
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-emerald-200/10">
+                <h3 className="mb-3 text-xl font-semibold text-white">
                   Potential future directions
                 </h3>
-                <p className="text-slate-700">
+                <p className="text-sm leading-relaxed text-slate-200">
                   We will suggest both established roles and new, emerging opportunities that align with your strengths and industry knowledge — including roles made possible by AI, humanoid robots, 3D printing, AR/VR, and other innovations.
                 </p>
               </div>
 
-              <div className="bg-amber-50 p-8 rounded-xl border border-amber-200">
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-emerald-200/10">
+                <h3 className="mb-3 text-xl font-semibold text-white">
                   Structured next steps
                 </h3>
-                <p className="text-slate-700">
+                <p className="text-sm leading-relaxed text-slate-200">
                   You'll receive a clear, practical 90-day plan outlining skills to focus on, projects to undertake, and ways to position yourself for your next phase.
                 </p>
               </div>
             </div>
 
-            <div className="bg-slate-100 p-6 rounded-lg border border-slate-300 text-center">
-              <p className="text-slate-700">
+            <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 text-center shadow-inner shadow-emerald-200/5">
+              <p className="text-sm text-slate-300">
                 For this MVP UI, this is a preview only. In the next iteration we'll connect to our backend and AI engine to provide personalised recommendations.
               </p>
             </div>
@@ -798,16 +816,17 @@ function Home() {
       )}
 
       {!isAssessmentMode && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">
+        <section className="relative px-4 py-24 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_bottom,_rgba(115,110,254,0.12),_transparent_70%)]" />
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="mb-6 text-3xl font-bold text-white">
               More than a job title
             </h2>
-            <div className="space-y-4 text-lg text-slate-600">
-              <p>
+            <div className="space-y-4 text-lg text-slate-300">
+              <p className="leading-relaxed">
                 Your experience, judgment, and relationships are not easily replaced by tools.
               </p>
-              <p>
+              <p className="leading-relaxed">
                 re-imagined.me helps you translate those strengths into roles that stay relevant as industries evolve.
               </p>
             </div>
