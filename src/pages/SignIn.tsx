@@ -14,9 +14,12 @@ function SignIn() {
     <div className="min-h-screen bg-slate-50">
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-xl mx-auto bg-white shadow-sm rounded-2xl border border-slate-200 p-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">
-            Join the re-imagined.me mailing list
+          <h1 className="text-4xl font-bold text-slate-900 mb-4 center">
+            Happening soon!
           </h1>
+          <h2 className="text-2xl text-slate-900 mb-4">
+            Join the re-imagined.me mailing list
+          </h2>
           <p className="text-lg text-slate-600 mb-8">
             Be the first to hear about new resources, community events, and updates from
             re-imagined.me. Sign up below and we&apos;ll keep you in the loop.

@@ -412,12 +412,11 @@ function Home() {
               Start your assessment
               <ArrowRight size={20} />
             </button>
-            <button
-              onClick={() => navigate('/how-it-works')}
+            <a href="#how-it-works"
               className="text-slate-700 hover:text-slate-900 transition font-medium"
             >
               How does this work?
-            </button>
+            </a>
           </div>
           <p className="mt-8 text-sm text-slate-500">
             Built for experienced professionals who want their work to stay meaningful and relevant.
