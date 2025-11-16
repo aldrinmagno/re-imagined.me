@@ -63,7 +63,6 @@ function Home() {
 
   useEffect(() => {
     if (isAssessmentMode) {
-      document.body.style.overflow = 'hidden';
       scrollToSection('assessment');
     } else {
       document.body.style.overflow = '';
