@@ -427,7 +427,7 @@ function Home() {
             <div className="mx-auto max-w-5xl text-center">
               <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1 text-sm font-medium text-emerald-700 shadow-sm">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Guided AI-powered planning for experienced professionals
+                Guided AI-powered planning for professionals
               </div>
               <h1 className="mt-8 text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
                 Design your next chapter, not just your next job
@@ -440,7 +440,7 @@ function Home() {
                   onClick={startAssessment}
                   className="w-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 px-10 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-300/30 transition hover:shadow-xl hover:shadow-emerald-200/40 sm:w-auto"
                 >
-                  <span className="inline-flex items-center justify-center gap-2">
+                  <span className="inline-flex items-center justify-center gap-2 text-xl">
                     Start your assessment
                     <ArrowRight size={20} />
                   </span>
@@ -454,7 +454,7 @@ function Home() {
                 </a>
               </div>
               <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-600">
-                Built for experienced professionals who want their work to stay meaningful and relevant.
+                Built for professionals who want their work to stay meaningful and relevant.
               </p>
             </div>
           </section>
