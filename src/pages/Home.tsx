@@ -822,7 +822,7 @@ function Home() {
                         ? 'bg-emerald-500 text-white hover:bg-emerald-400 disabled:bg-slate-300 disabled:text-white/70'
                         : 'bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 text-white shadow-lg shadow-emerald-300/20 hover:shadow-xl hover:shadow-emerald-200/30 disabled:bg-slate-300/60 disabled:text-white/70'
                     }`}
-                    disabled={!isStepValid(currentStep) || isSubmitting}
+                    disabled={!isStepValid(currentStep) || isSubmitting || showSnapshot}
                   >
                     {isSubmitting ? 'Saving your answers…' : 'Generate my snapshot'}
                   </button>
