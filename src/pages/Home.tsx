@@ -64,6 +64,7 @@ function Home() {
   useEffect(() => {
     if (isAssessmentMode) {
       document.body.style.overflow = 'hidden';
+      document.getElementById("assessment")?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       document.body.style.overflow = '';
     }
@@ -235,6 +236,7 @@ function Home() {
 
   const handleFieldChange = (field: keyof AssessmentFormData, value: string) => {
     if (!isAssessmentActive) {
+      
       setHasAssessmentStarted(true);
       setIsAssessmentActive(true);
     }
@@ -289,6 +291,7 @@ function Home() {
   };
 
   const handleEnterKey = (event: KeyboardEvent<HTMLInputElement>) => {
+    
     if (event.key === 'Enter' && !event.shiftKey) {
       if (currentStep < steps.length - 1) {
         event.preventDefault();
@@ -519,7 +522,7 @@ function Home() {
           <button
             type="button"
             onClick={handleExitAssessment}
-            className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600"
+            className="absolute z-50 right-4 top-4 flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600"
           >
             <X size={16} aria-hidden="true" />
             Exit
@@ -551,10 +554,11 @@ function Home() {
             )}
 
             <form
+              id='assessment-form'
               onSubmit={handleSubmit}
               className={`${
                 isAssessmentMode
-                  ? 'mx-auto w-full max-w-2xl rounded-3xl border border-slate-300 bg-white p-6 sm:p-10 shadow-2xl shadow-emerald-200/20'
+                  ? 'mx-auto w-full max-w-2xl rounded-3xl border border-slate-300 bg-white p-6 sm:p-10 shadow-2xl shadow-emerald-200/20 mt-14'
                   : 'rounded-3xl border border-slate-300/70 bg-white/90 backdrop-blur-sm p-6 sm:p-10 shadow-xl shadow-emerald-200/20'
               } ${hasAssessmentStarted ? 'animate-assessment-enter' : ''}`}
             >
