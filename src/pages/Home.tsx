@@ -64,7 +64,7 @@ function Home() {
   useEffect(() => {
     if (isAssessmentMode) {
       document.body.style.overflow = 'hidden';
-      document.getElementById("assessment")?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToSection('assessment');
     } else {
       document.body.style.overflow = '';
     }
@@ -236,7 +236,6 @@ function Home() {
 
   const handleFieldChange = (field: keyof AssessmentFormData, value: string) => {
     if (!isAssessmentActive) {
-      
       setHasAssessmentStarted(true);
       setIsAssessmentActive(true);
     }
@@ -297,7 +296,11 @@ function Home() {
         event.preventDefault();
         handleNext();
       }
+
+      
+     scrollToSection('assessment');
     }
+
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
