@@ -1,10 +1,12 @@
 import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
 import type { AssessmentFormData } from '../types/assessment';
+import { useAuth } from '../context/AuthContext';
 
-type StepType = 'input' | 'textarea' | 'select' | 'radio';
+type StepType = 'input' | 'textarea' | 'select' | 'radio' | 'signup';
 
 type InputModeType =
   | 'none'
@@ -38,10 +40,13 @@ const createInitialFormData = (): AssessmentFormData => ({
   typicalWeek: '',
   lookingFor: '',
   workPreferences: '',
-  email: ''
+  fullName: '',
+  email: '',
+  password: ''
 });
 
 function Home() {
+  const { user } = useAuth();
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [isAssessmentActive, setIsAssessmentActive] = useState(false);
   const [hasAssessmentStarted, setHasAssessmentStarted] = useState(false);
@@ -167,12 +172,10 @@ function Home() {
     },
     {
       id: 'email',
-      title: 'Stay in the loop',
-      prompt: 'Where should we send your roadmap later?',
-      type: 'input',
-      required: true,
-      inputType: 'email',
-      placeholder: 'your.email@example.com'
+      title: 'Create your account',
+      prompt: 'Sign up to save your roadmap and unlock your personalised plan.',
+      type: 'signup',
+      required: true
     }
   ];
 
@@ -226,7 +229,9 @@ function Home() {
         const value = getFieldValue('email').trim();
         if (!value) return false;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(value);
+        const isEmailValid = emailRegex.test(value);
+        const passwordIsValid = user ? true : formData.password.trim().length >= 6;
+        return isEmailValid && passwordIsValid;
       }
       default:
         return true;
@@ -326,6 +331,11 @@ function Home() {
       return;
     }
 
+    if (!user && formData.password.trim().length < 6) {
+      setError('Please create a password with at least 6 characters.');
+      return;
+    }
+
     setError('');
     setIsSubmitting(true);
 
@@ -338,6 +348,26 @@ function Home() {
 
     try {
       const supabase = getSupabaseClient();
+
+      if (!user) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: formData.email.trim(),
+          password: formData.password,
+          options: {
+            data: { full_name: formData.fullName || null }
+          }
+        });
+
+        if (signUpError) {
+          setError(
+            signUpError.message.includes('already registered')
+              ? 'You already have an account with this email. Try logging in instead.'
+              : signUpError.message || 'We could not create your account. Please try again.'
+          );
+          return;
+        }
+      }
+
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
         job_title: formData.jobTitle,
         industry: formData.industry,
@@ -346,7 +376,8 @@ function Home() {
         typical_week: formData.typicalWeek || null,
         looking_for: formData.lookingFor,
         work_preferences: formData.workPreferences || null,
-        email: formData.email,
+        email: formData.email.trim(),
+        full_name: formData.fullName || null,
         submitted_at: new Date().toISOString()
       });
 
@@ -775,6 +806,73 @@ function Home() {
                               );
                             })}
                           </fieldset>
+                        );
+                      }
+
+                      if (step.type === 'signup') {
+                        return (
+                          <div className="space-y-6">
+                            <p className="text-base text-slate-700">
+                              Join re-imagined.me to store your answers, revisit your roadmap, and access the portal when it opens.
+                            </p>
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <label htmlFor={`${currentInputId}-name`} className="text-sm font-medium text-slate-800">
+                                  Full name
+                                </label>
+                                <input
+                                  id={`${currentInputId}-name`}
+                                  type="text"
+                                  placeholder="Ada Lovelace"
+                                  value={formData.fullName}
+                                  onChange={(event) => handleFieldChange('fullName', event.target.value)}
+                                  className={commonInputClasses}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label htmlFor={`${currentInputId}-email`} className="text-sm font-medium text-slate-800">
+                                  Email address
+                                </label>
+                                <input
+                                  id={`${currentInputId}-email`}
+                                  type="email"
+                                  placeholder="you@example.com"
+                                  value={formData.email}
+                                  onChange={(event) => handleFieldChange('email', event.target.value)}
+                                  className={commonInputClasses}
+                                  ref={(element: HTMLInputElement | null) => {
+                                    interactiveRefs.current[step.id] = element;
+                                  }}
+                                />
+                              </div>
+                              {!user && (
+                                <div className="space-y-2">
+                                  <label htmlFor={`${currentInputId}-password`} className="text-sm font-medium text-slate-800">
+                                    Create a password
+                                  </label>
+                                  <input
+                                    id={`${currentInputId}-password`}
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    minLength={6}
+                                    onChange={(event) => handleFieldChange('password', event.target.value)}
+                                    className={commonInputClasses}
+                                  />
+                                  <p className="text-xs text-slate-500">Minimum 6 characters.</p>
+                                </div>
+                              )}
+                            </div>
+                            {!user && (
+                              <p className="text-sm text-slate-600">
+                                Already signed up?{' '}
+                                <Link to="/login" className="font-semibold text-emerald-600 hover:text-emerald-500">
+                                  Log in
+                                </Link>{' '}
+                                to continue.
+                              </p>
+                            )}
+                          </div>
                         );
                       }
 
