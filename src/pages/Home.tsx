@@ -560,7 +560,7 @@ function Home() {
     setTransitionDirection('forward');
     setStepAnimationKey(0);
     setIsSubmitting(false);
-    setSnapshotSummary('');
+    setSnapshotSections(createEmptySnapshotSections());
     setSnapshotError('');
     setIsGeneratingSnapshot(false);
   };
@@ -570,7 +570,7 @@ function Home() {
     setIsAssessmentActive(true);
     setShowSnapshot(false);
     setTransitionDirection('forward');
-    setSnapshotSummary('');
+    setSnapshotSections(createEmptySnapshotSections());
     setSnapshotError('');
     setIsGeneratingSnapshot(false);
     scrollToSection('assessment');
