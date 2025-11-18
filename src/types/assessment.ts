@@ -6,5 +6,4 @@ export interface AssessmentFormData {
   typicalWeek: string;
   lookingFor: string;
   workPreferences: string;
-  email: string;
 }

@@ -1,4 +1,5 @@
 import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
@@ -37,8 +38,7 @@ const createInitialFormData = (): AssessmentFormData => ({
   strengths: '',
   typicalWeek: '',
   lookingFor: '',
-  workPreferences: '',
-  email: ''
+  workPreferences: ''
 });
 
 function Home() {
@@ -165,15 +165,6 @@ function Home() {
       rows: 4,
       helperText: 'Optional — e.g., more ownership, more creativity, more stability, less routine work…'
     },
-    {
-      id: 'email',
-      title: 'Stay in the loop',
-      prompt: 'Where should we send your roadmap later?',
-      type: 'input',
-      required: true,
-      inputType: 'email',
-      placeholder: 'your.email@example.com'
-    }
   ];
 
   const currentStepDefinition = steps[currentStep];
@@ -222,12 +213,6 @@ function Home() {
         return getFieldValue('strengths').trim().length > 0;
       case 'lookingFor':
         return getFieldValue('lookingFor').trim().length > 0;
-      case 'email': {
-        const value = getFieldValue('email').trim();
-        if (!value) return false;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(value);
-      }
       default:
         return true;
     }
@@ -315,14 +300,8 @@ function Home() {
     }
 
     if (!formData.jobTitle || !formData.industry || !formData.yearsExperience ||
-        !formData.strengths || !formData.email || !formData.lookingFor) {
+        !formData.strengths || !formData.lookingFor) {
       setError('Please fill in all required fields before submitting.');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address.');
       return;
     }
 
@@ -346,7 +325,6 @@ function Home() {
         typical_week: formData.typicalWeek || null,
         looking_for: formData.lookingFor,
         work_preferences: formData.workPreferences || null,
-        email: formData.email,
         submitted_at: new Date().toISOString()
       });
 
@@ -868,6 +846,30 @@ function Home() {
               industryLabel={industryLabel}
               mode="full"
             />
+            <div className="mt-10 rounded-3xl border border-slate-200 bg-white/80 p-8 text-center shadow-xl shadow-emerald-200/20">
+              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-500">Next step</p>
+              <h3 className="mt-4 text-2xl font-semibold text-slate-900">
+                Create your account to save and expand this roadmap
+              </h3>
+              <p className="mt-3 text-base text-slate-600">
+                We now ask everyone to finish the assessment first. When you sign up, we’ll connect your answers to personalised
+                plans, guidance, and AI-powered tools.
+              </p>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-center">
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-400 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/40 transition hover:shadow-emerald-300/50"
+                >
+                  Sign up to continue
+                </Link>
+                <Link
+                  to="/login"
+                  className="text-sm font-semibold text-emerald-600 transition hover:text-emerald-500"
+                >
+                  Already have an account? Log in
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
       )}
