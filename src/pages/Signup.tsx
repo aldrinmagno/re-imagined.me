@@ -1,9 +1,10 @@
 import { FormEvent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthPageLayout from '../components/AuthPageLayout';
 import { getSupabaseClient } from '../lib/supabaseClient';
 
 function Signup() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -33,6 +34,7 @@ function Signup() {
       }
 
       setMessage('Check your inbox to confirm your email and finish creating your account.');
+      navigate('/portal');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {

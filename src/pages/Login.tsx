@@ -11,7 +11,7 @@ function Login() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const redirectPath = (location.state as { from?: string } | null)?.from || '/';
+  const redirectPath = (location.state as { from?: string } | null)?.from || '/portal';
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

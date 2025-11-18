@@ -1,14 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-function Layout({ children }: LayoutProps) {
+function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { user, loading, signOut } = useAuth();
@@ -123,7 +119,7 @@ function Layout({ children }: LayoutProps) {
       </nav>
 
       <main className="flex-grow">
-        {children}
+        <Outlet />
       </main>
 
       <footer className="border-t border-slate-300 bg-white/95 py-10 px-4 sm:px-6 lg:px-8">
