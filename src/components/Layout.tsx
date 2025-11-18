@@ -1,15 +1,28 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import Logo from './Logo';
+import { useAuth } from '../context/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 function Layout({ children }: LayoutProps) {
-  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { user, loading, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Failed to sign out', error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
 
   return (
@@ -25,10 +38,34 @@ function Layout({ children }: LayoutProps) {
             </Link>
 
             <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-              
-            </div>
-
-            <div className="hidden md:flex items-center">
+              {!loading && user ? (
+                <>
+                  <span className="text-sm text-slate-600">{user.email}</span>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isSigningOut ? 'Signing out…' : 'Log out'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-slate-700 transition hover:text-emerald-600"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:border-emerald-300 hover:text-emerald-600"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
               <Link
                 to="/join-waitlist"
                 className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-400"
@@ -48,7 +85,42 @@ function Layout({ children }: LayoutProps) {
 
           {mobileMenuOpen && (
             <div className="md:hidden py-4 space-y-3 border-t border-slate-200 text-sm">
-             
+              {!loading && user ? (
+                <>
+                  <span className="block rounded-xl border border-slate-200 px-4 py-2 text-center text-slate-700">
+                    {user.email}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    disabled={isSigningOut}
+                    className="w-full rounded-full border border-slate-200 px-4 py-2 text-center font-semibold text-slate-800 transition hover:border-emerald-300 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isSigningOut ? 'Signing out…' : 'Log out'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block rounded-full border border-slate-200 px-4 py-2 text-center font-semibold text-slate-800 transition hover:border-emerald-300 hover:text-emerald-600"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block rounded-full border border-slate-200 px-4 py-2 text-center font-semibold text-slate-800 transition hover:border-emerald-300 hover:text-emerald-600"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+
               <Link
                 to="/join-waitlist"
                 onClick={() => setMobileMenuOpen(false)}
