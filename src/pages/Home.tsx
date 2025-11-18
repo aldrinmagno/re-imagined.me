@@ -346,6 +346,7 @@ function Home() {
         typical_week: formData.typicalWeek || null,
         looking_for: formData.lookingFor,
         work_preferences: formData.workPreferences || null,
+        full_name: null,
         email: formData.email,
         submitted_at: new Date().toISOString()
       });
