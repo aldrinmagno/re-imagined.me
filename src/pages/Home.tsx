@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
-import type { AssessmentFormData } from '../types/assessment';
+import type { AssessmentFormData, SnapshotSections } from '../types/assessment';
 import { useAuth } from '../context/AuthContext';
 
 type StepType = 'input' | 'textarea' | 'select' | 'radio' | 'signup';
@@ -57,6 +57,15 @@ function Home() {
   const [stepAnimationKey, setStepAnimationKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const createEmptySnapshotSections = (): SnapshotSections => ({
+    evolution: '',
+    directions: '',
+    nextSteps: ''
+  });
+
+  const [snapshotSections, setSnapshotSections] = useState<SnapshotSections>(createEmptySnapshotSections);
+  const [isGeneratingSnapshot, setIsGeneratingSnapshot] = useState(false);
+  const [snapshotError, setSnapshotError] = useState('');
 
   const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -307,6 +316,94 @@ function Home() {
 
   };
 
+  const generateSnapshotSections = async (data: AssessmentFormData): Promise<SnapshotSections> => {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('Missing OpenAI API key.');
+    }
+
+    const baseProfile =
+      `Candidate profile:\n` +
+      `Job Title: ${data.jobTitle || 'Unknown'}\n` +
+      `Industry: ${data.industry || 'Unknown'}\n` +
+      `Years Experience: ${data.yearsExperience || 'Unknown'}\n` +
+      `Strengths: ${data.strengths || 'None provided'}\n` +
+      `Typical Week: ${data.typicalWeek || 'Not shared'}\n` +
+      `Looking For: ${data.lookingFor || 'Not specified'}\n` +
+      `Work Preferences: ${data.workPreferences || 'Not shared'}`;
+
+    const sectionsConfig: { key: keyof SnapshotSections; instruction: string }[] = [
+      {
+        key: 'evolution',
+        instruction:
+          'Describe how their work may evolve over the next 2-3 years. Highlight one emerging trend or skill adjacency from their industry and explain how their strengths equip them to lean into it.'
+      },
+      {
+        key: 'directions',
+        instruction:
+          'Offer two potential future directions they could explore. Mention why each path could fit their goals and preferences without repeating the same idea.'
+      },
+      {
+        key: 'nextSteps',
+        instruction:
+          'Outline one structured next step they can take in the coming weeks. Make it specific and actionable (e.g., a project, conversation, or learning goal) with a brief rationale.'
+      }
+    ];
+
+    const callOpenAI = async (prompt: string) => {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          max_tokens: 180,
+          temperature: 0.4,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are an expert career strategist who writes concise, optimistic-yet-grounded guidance rooted in the user\'s current context.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate a snapshot section.');
+      }
+
+      const completion = await response.json();
+      const message = completion?.choices?.[0]?.message?.content?.trim();
+
+      if (!message) {
+        throw new Error('Snapshot section response was empty.');
+      }
+
+      return message;
+    };
+
+    const entries = await Promise.all(
+      sectionsConfig.map(async (section) => {
+        const prompt = `${section.instruction}\n\n${baseProfile}\n\nGuidelines:\n- Limit the response to 2 sentences.\n- Reference the candidate by "you".\n- Keep the tone confident, encouraging, and specific.`;
+        const sectionText = await callOpenAI(prompt);
+        return [section.key, sectionText] as const;
+      })
+    );
+
+    return entries.reduce<SnapshotSections>((acc, [key, value]) => ({
+      ...acc,
+      [key]: value
+    }), createEmptySnapshotSections());
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -337,6 +434,8 @@ function Home() {
     }
 
     setError('');
+    setSnapshotError('');
+    setSnapshotSections(createEmptySnapshotSections());
     setIsSubmitting(true);
 
     const yearsExperienceValue = Number.parseInt(formData.yearsExperience, 10);
@@ -346,9 +445,10 @@ function Home() {
       return;
     }
 
-    try {
-      const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient();
+    let insertedResponseId: string | null = null;
 
+    try {
       if (!user) {
         const { error: signUpError } = await supabase.auth.signUp({
           email: formData.email.trim(),
@@ -364,11 +464,14 @@ function Home() {
               ? 'You already have an account with this email. Try logging in instead.'
               : signUpError.message || 'We could not create your account. Please try again.'
           );
+          setIsSubmitting(false);
           return;
         }
       }
 
-      const { error: submissionError } = await supabase.from('assessment_responses').insert({
+      const { data, error: submissionError } = await supabase
+        .from('assessment_responses')
+        .insert({
         job_title: formData.jobTitle,
         industry: formData.industry,
         years_experience: yearsExperienceValue,
@@ -378,29 +481,57 @@ function Home() {
         work_preferences: formData.workPreferences || null,
         email: formData.email.trim(),
         full_name: formData.fullName || null,
+        snapshot_summary: null,
         submitted_at: new Date().toISOString()
-      });
+      })
+        .select('id')
+        .single();
 
       if (submissionError) {
         console.error('Failed to save assessment response', submissionError);
         setError('We couldn\'t save your answers. Please try again.');
+        setIsSubmitting(false);
         return;
       }
+
+      insertedResponseId = data?.id ?? null;
     } catch (supabaseError) {
       console.error('Error saving assessment response', supabaseError);
       setError('We\'re having trouble connecting right now. Please try again later.');
-      return;
-    } finally {
       setIsSubmitting(false);
+      return;
     }
 
+    setIsGeneratingSnapshot(true);
     setShowSnapshot(true);
     setIsAssessmentActive(false);
     setHasAssessmentStarted(false);
 
-    setTimeout(() => {
-      scrollToSection('snapshot');
-    }, 100);
+    try {
+      const sections = await generateSnapshotSections(formData);
+      setSnapshotSections(sections);
+
+      if (insertedResponseId) {
+        const { error: updateError } = await supabase
+          .from('assessment_responses')
+          .update({ snapshot_summary: JSON.stringify(sections) })
+          .eq('id', insertedResponseId);
+
+        if (updateError) {
+          console.error('Failed to persist snapshot summary', updateError);
+        }
+      }
+    } catch (snapshotGenerationError) {
+      console.error('Error generating snapshot summary', snapshotGenerationError);
+      setSnapshotError('Your answers were saved, but we could not generate the AI snapshot. Please try again soon.');
+    } finally {
+      setIsGeneratingSnapshot(false);
+      setIsSubmitting(false);
+
+      setTimeout(() => {
+        scrollToSection('snapshot');
+      }, 100);
+    }
   };
 
   const goalLabelMap = {
@@ -429,6 +560,9 @@ function Home() {
     setTransitionDirection('forward');
     setStepAnimationKey(0);
     setIsSubmitting(false);
+    setSnapshotSummary('');
+    setSnapshotError('');
+    setIsGeneratingSnapshot(false);
   };
 
   const startAssessment = () => {
@@ -436,6 +570,9 @@ function Home() {
     setIsAssessmentActive(true);
     setShowSnapshot(false);
     setTransitionDirection('forward');
+    setSnapshotSummary('');
+    setSnapshotError('');
+    setIsGeneratingSnapshot(false);
     scrollToSection('assessment');
   };
 
@@ -920,9 +1057,13 @@ function Home() {
                         ? 'bg-emerald-500 text-white hover:bg-emerald-400 disabled:bg-slate-300 disabled:text-white/70'
                         : 'bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 text-white shadow-lg shadow-emerald-300/20 hover:shadow-xl hover:shadow-emerald-200/30 disabled:bg-slate-300/60 disabled:text-white/70'
                     }`}
-                    disabled={!isStepValid(currentStep) || isSubmitting || showSnapshot}
+                    disabled={!isStepValid(currentStep) || isSubmitting || isGeneratingSnapshot || showSnapshot}
                   >
-                    {isSubmitting ? 'Saving your answers…' : 'Generate my snapshot'}
+                    {isGeneratingSnapshot
+                      ? 'Generating your snapshot…'
+                      : isSubmitting
+                        ? 'Saving your answers…'
+                        : 'Generate my snapshot'}
                   </button>
                 ) : (
                   <button
@@ -965,6 +1106,9 @@ function Home() {
               goalText={goalText}
               industryLabel={industryLabel}
               mode="full"
+              snapshotSections={snapshotSections}
+              snapshotError={snapshotError}
+              isGeneratingSnapshot={isGeneratingSnapshot}
             />
           </div>
         </section>

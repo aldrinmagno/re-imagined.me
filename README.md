@@ -29,3 +29,15 @@ npm run preview
 ```
 
 Then visit the preview URL output in the terminal.
+
+### Environment Variables
+
+Create a `.env` file in the project root (or update your existing one) with the following values so the assessment flow can talk to the required services:
+
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_OPENAI_API_KEY=your_openai_api_key
+```
+
+`VITE_OPENAI_API_KEY` powers the AI-generated career snapshot by calling the low-cost `gpt-4o-mini` ChatGPT model after an assessment is submitted.

@@ -1,4 +1,4 @@
-import type { AssessmentFormData } from '../types/assessment';
+import type { AssessmentFormData, SnapshotSections } from '../types/assessment';
 
 type PreviewMode = 'live' | 'full';
 
@@ -7,6 +7,9 @@ interface AssessmentPreviewPanelProps {
   goalText: string;
   industryLabel?: string;
   mode: PreviewMode;
+  snapshotSections?: SnapshotSections;
+  snapshotError?: string;
+  isGeneratingSnapshot?: boolean;
 }
 
 const placeholder = (text: string) => (
@@ -29,7 +32,10 @@ const AssessmentPreviewPanel = ({
   formData,
   goalText,
   industryLabel,
-  mode
+  mode,
+  snapshotSections,
+  snapshotError,
+  isGeneratingSnapshot
 }: AssessmentPreviewPanelProps) => {
   const detailItems = [
     {
@@ -141,38 +147,46 @@ const AssessmentPreviewPanel = ({
             ))}
           </div>
         ) : (
-          <div className="space-y-8">
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30">
-                <h4 className="mb-3 text-base font-semibold text-slate-700">
-                  How your work may evolve
-                </h4>
-                <p className="text-sm leading-relaxed">
-                  As new technologies such as AI, automation, and robotics advance, certain tasks in your role may change. In the full version, we'll help you identify which parts of your work are likely to increase in strategic value.
+          <div className="space-y-4">
+            {[
+              {
+                key: 'evolution',
+                title: 'How your work may evolve',
+                placeholderText:
+                  'Once generated, you’ll see how your current role could stretch over the next few years.'
+              },
+              {
+                key: 'directions',
+                title: 'Potential future directions',
+                placeholderText:
+                  'We’ll suggest distinct paths to explore based on your goals and strengths.'
+              },
+              {
+                key: 'nextSteps',
+                title: 'Structured next steps',
+                placeholderText:
+                  'Expect a concrete, near-term action you can take to build momentum.'
+              }
+            ].map((section) => (
+              <div
+                key={section.key}
+                className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30"
+              >
+                <h4 className="mb-3 text-base font-semibold text-slate-700">{section.title}</h4>
+                <p className="text-base leading-relaxed text-slate-700">
+                  {isGeneratingSnapshot
+                    ? 'We’re crafting your personalised snapshot based on your responses…'
+                    : snapshotSections?.[section.key as keyof SnapshotSections]
+                        ? snapshotSections[section.key as keyof SnapshotSections]
+                        : placeholder(section.placeholderText)}
                 </p>
               </div>
-              <div className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30">
-                <h4 className="mb-3 text-base font-semibold text-slate-700">
-                  Potential future directions
-                </h4>
-                <p className="text-sm leading-relaxed">
-                  We will suggest both established roles and new, emerging opportunities that align with your strengths and industry knowledge — including roles made possible by AI, humanoid robots, 3D printing, AR/VR, and other innovations.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30">
-                <h4 className="mb-3 text-base font-semibold text-slate-700">
-                  Structured next steps
-                </h4>
-                <p className="text-sm leading-relaxed">
-                  You'll receive a clear, practical 90-day plan outlining skills to focus on, projects to undertake, and ways to position yourself for your next phase.
-                </p>
-              </div>
-            </div>
-            <div className="rounded-2xl border border-transparent bg-white/25 p-5 text-center text-slate-500 ring-1 ring-slate-200/25">
-              <p className="text-sm">
-                For this MVP UI, this is a preview only. In the next iteration we'll connect to our backend and AI engine to provide personalised recommendations.
+            ))}
+            {snapshotError && (
+              <p className="text-sm text-red-600">
+                {snapshotError}
               </p>
-            </div>
+            )}
           </div>
         )}
       </div>
