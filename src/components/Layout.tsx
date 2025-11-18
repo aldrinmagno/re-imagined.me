@@ -64,14 +64,14 @@ function Layout({ children }: LayoutProps) {
                   >
                     Sign up
                   </Link>
+                   <Link
+                    to="/join-waitlist"
+                    className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-400"
+                  >
+                    Join waitlist
+                  </Link>
                 </>
               )}
-              <Link
-                to="/join-waitlist"
-                className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-400"
-              >
-                Join waitlist
-              </Link>
             </div>
 
             <button
