@@ -10,3 +10,9 @@ export interface AssessmentFormData {
   email: string;
   password: string;
 }
+
+export interface SnapshotInsights {
+  workEvolution: string;
+  futureDirections: string;
+  nextSteps: string;
+}

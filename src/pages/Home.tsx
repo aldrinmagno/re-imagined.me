@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
-import type { AssessmentFormData } from '../types/assessment';
+import { generateSnapshotInsights } from '../lib/generateSnapshotInsights';
+import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 import { useAuth } from '../context/AuthContext';
 
 type StepType = 'input' | 'textarea' | 'select' | 'radio' | 'signup';
@@ -57,6 +58,7 @@ function Home() {
   const [stepAnimationKey, setStepAnimationKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snapshotInsights, setSnapshotInsights] = useState<SnapshotInsights | null>(null);
 
   const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -294,17 +296,14 @@ function Home() {
   };
 
   const handleEnterKey = (event: KeyboardEvent<HTMLInputElement>) => {
-    
     if (event.key === 'Enter' && !event.shiftKey) {
       if (currentStep < steps.length - 1) {
         event.preventDefault();
         handleNext();
       }
 
-      
-     scrollToSection('assessment');
+      scrollToSection('assessment');
     }
-
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -368,6 +367,12 @@ function Home() {
         }
       }
 
+      const insights = await generateSnapshotInsights({
+        formData,
+        goalText,
+        industryLabel
+      });
+
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
         job_title: formData.jobTitle,
         industry: formData.industry,
@@ -378,7 +383,8 @@ function Home() {
         work_preferences: formData.workPreferences || null,
         email: formData.email.trim(),
         full_name: formData.fullName || null,
-        submitted_at: new Date().toISOString()
+        submitted_at: new Date().toISOString(),
+        snapshot_insights: insights
       });
 
       if (submissionError) {
@@ -386,6 +392,8 @@ function Home() {
         setError('We couldn\'t save your answers. Please try again.');
         return;
       }
+
+      setSnapshotInsights(insights);
     } catch (supabaseError) {
       console.error('Error saving assessment response', supabaseError);
       setError('We\'re having trouble connecting right now. Please try again later.');
@@ -429,12 +437,14 @@ function Home() {
     setTransitionDirection('forward');
     setStepAnimationKey(0);
     setIsSubmitting(false);
+    setSnapshotInsights(null);
   };
 
   const startAssessment = () => {
     setHasAssessmentStarted(true);
     setIsAssessmentActive(true);
     setShowSnapshot(false);
+    setSnapshotInsights(null);
     setTransitionDirection('forward');
     scrollToSection('assessment');
   };
@@ -950,6 +960,7 @@ function Home() {
                 goalText={goalText}
                 industryLabel={industryLabel}
                 mode="live"
+                snapshotInsights={snapshotInsights}
               />
             </div>
           )}
@@ -965,6 +976,7 @@ function Home() {
               goalText={goalText}
               industryLabel={industryLabel}
               mode="full"
+              snapshotInsights={snapshotInsights}
             />
           </div>
         </section>

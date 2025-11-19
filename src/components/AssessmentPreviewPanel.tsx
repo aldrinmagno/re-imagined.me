@@ -1,4 +1,4 @@
-import type { AssessmentFormData } from '../types/assessment';
+import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 
 type PreviewMode = 'live' | 'full';
 
@@ -7,6 +7,7 @@ interface AssessmentPreviewPanelProps {
   goalText: string;
   industryLabel?: string;
   mode: PreviewMode;
+  snapshotInsights?: SnapshotInsights | null;
 }
 
 const placeholder = (text: string) => (
@@ -29,7 +30,8 @@ const AssessmentPreviewPanel = ({
   formData,
   goalText,
   industryLabel,
-  mode
+  mode,
+  snapshotInsights
 }: AssessmentPreviewPanelProps) => {
   const detailItems = [
     {
@@ -143,34 +145,33 @@ const AssessmentPreviewPanel = ({
         ) : (
           <div className="space-y-8">
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30">
-                <h4 className="mb-3 text-base font-semibold text-slate-700">
-                  How your work may evolve
-                </h4>
-                <p className="text-sm leading-relaxed">
-                  As new technologies such as AI, automation, and robotics advance, certain tasks in your role may change. In the full version, we'll help you identify which parts of your work are likely to increase in strategic value.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30">
-                <h4 className="mb-3 text-base font-semibold text-slate-700">
-                  Potential future directions
-                </h4>
-                <p className="text-sm leading-relaxed">
-                  We will suggest both established roles and new, emerging opportunities that align with your strengths and industry knowledge — including roles made possible by AI, humanoid robots, 3D printing, AR/VR, and other innovations.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30">
-                <h4 className="mb-3 text-base font-semibold text-slate-700">
-                  Structured next steps
-                </h4>
-                <p className="text-sm leading-relaxed">
-                  You'll receive a clear, practical 90-day plan outlining skills to focus on, projects to undertake, and ways to position yourself for your next phase.
-                </p>
-              </div>
+              {[{
+                title: 'How your work may evolve',
+                value: snapshotInsights?.workEvolution
+              },
+              {
+                title: 'Potential future directions',
+                value: snapshotInsights?.futureDirections
+              },
+              {
+                title: 'Structured next steps',
+                value: snapshotInsights?.nextSteps
+              }].map((section) => (
+                <div
+                  key={section.title}
+                  className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30"
+                >
+                  <h4 className="mb-3 text-base font-semibold text-slate-700">{section.title}</h4>
+                  <p className="text-sm leading-relaxed">
+                    {section.value ||
+                      'Your personalised AI snapshot will appear here once your answers are saved.'}
+                  </p>
+                </div>
+              ))}
             </div>
             <div className="rounded-2xl border border-transparent bg-white/25 p-5 text-center text-slate-500 ring-1 ring-slate-200/25">
               <p className="text-sm">
-                For this MVP UI, this is a preview only. In the next iteration we'll connect to our backend and AI engine to provide personalised recommendations.
+                These insights are generated automatically based on your responses and will evolve as we collect more signals.
               </p>
             </div>
           </div>
