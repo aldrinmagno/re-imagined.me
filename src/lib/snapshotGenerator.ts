@@ -1,4 +1,5 @@
 import type { AssessmentFormData } from '../types/assessment';
+import { getSupabaseClient } from './supabaseClient';
 
 export interface SnapshotPrompts {
   howYourWorkMayEvolve: string;
@@ -12,64 +13,23 @@ export interface SnapshotResponses {
   structuredNextSteps: string;
 }
 
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-const OPENAI_MODEL = 'gpt-4o-mini';
-
-async function callOpenAI(prompt: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('OpenAI API key is not configured.');
-  }
-
-  const response = await fetch(OPENAI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      temperature: 0.4,
-      max_tokens: 250,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are a concise career strategist. Reply with friendly, forward-looking, plain-language insights that fit comfortably inside a short paragraph or compact list.'
-        },
-        { role: 'user', content: prompt }
-      ]
-    })
+export async function generateSnapshotSections(prompts: SnapshotPrompts): Promise<SnapshotResponses> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.functions.invoke<SnapshotResponses>('generate-snapshot', {
+    body: {
+      sections: prompts
+    }
   });
 
-  if (!response.ok) {
-    const errorPayload = await response.json().catch(() => ({}));
-    const message = errorPayload?.error?.message || 'Failed to generate an AI snapshot.';
-    throw new Error(message);
+  if (error) {
+    throw new Error(error.message || 'Failed to generate an AI snapshot.');
   }
 
-  const data = await response.json();
-  const content: string | undefined = data?.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new Error('The AI response was empty.');
+  if (!data) {
+    throw new Error('Snapshot data was not returned by the server.');
   }
 
-  return content.trim();
-}
-
-export async function generateSnapshotSections(prompts: SnapshotPrompts): Promise<SnapshotResponses> {
-  const entries = Object.entries(prompts) as [keyof SnapshotPrompts, string][];
-  const results: Partial<SnapshotResponses> = {};
-
-  for (const [key, prompt] of entries) {
-    // Sequential calls keep token usage predictable and let us persist each prompt separately.
-    const response = await callOpenAI(prompt);
-    results[key] = response;
-  }
-
-  return results as SnapshotResponses;
+  return data;
 }
 
 export function buildSnapshotPrompts(
