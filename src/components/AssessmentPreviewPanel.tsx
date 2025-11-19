@@ -1,4 +1,5 @@
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
+import { Link } from 'react-router-dom';
 
 type PreviewMode = 'live' | 'full';
 
@@ -170,6 +171,21 @@ const AssessmentPreviewPanel = ({
               ))}
             </div>
             <div className="rounded-2xl border border-transparent bg-white/25 p-5 text-center text-slate-500 ring-1 ring-slate-200/25">
+            <div className="flex flex-col items-center justify-center sm:flex-row">
+                {(
+                  <Link
+                    to="/login"
+                    className="w-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 px-10 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-300/30 transition hover:shadow-xl hover:shadow-emerald-200/40 sm:w-auto"
+                  >
+                    Login to your road map!
+                 </Link>
+                 )}
+                
+              </div>
+
+            </div>
+            <div className="rounded-2xl border border-transparent bg-white/25 p-5 text-center text-slate-500 ring-1 ring-slate-200/25">
+            
               <p className="text-sm">
                 These insights are generated automatically based on your responses and will evolve as we collect more signals.
               </p>
