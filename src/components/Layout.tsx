@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, Outlet } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
@@ -7,8 +7,9 @@ import { useAuth } from '../context/AuthContext';
 function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, loading } = useAuth();
+  const location = useLocation();
 
-  if (!loading && user) {
+  if (!loading && user && location.pathname !== '/logout') {
     return <Navigate to="/portal" replace />;
   }
 
