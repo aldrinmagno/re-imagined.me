@@ -4,6 +4,12 @@ import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
 import type { AssessmentFormData } from '../types/assessment';
+import {
+  buildSnapshotPrompts,
+  generateSnapshotSections,
+  type SnapshotResponses,
+  type SnapshotPrompts
+} from '../lib/snapshotGenerator';
 import { useAuth } from '../context/AuthContext';
 
 type StepType = 'input' | 'textarea' | 'select' | 'radio' | 'signup';
@@ -57,6 +63,7 @@ function Home() {
   const [stepAnimationKey, setStepAnimationKey] = useState(0);
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snapshotResponses, setSnapshotResponses] = useState<SnapshotResponses | null>(null);
 
   const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -339,6 +346,19 @@ function Home() {
     setError('');
     setIsSubmitting(true);
 
+    const prompts: SnapshotPrompts = buildSnapshotPrompts(formData, goalText, industryLabel);
+
+    let aiSnapshot: SnapshotResponses;
+
+    try {
+      aiSnapshot = await generateSnapshotSections(prompts);
+    } catch (aiError) {
+      console.error('Failed to generate AI snapshot', aiError);
+      setError('We could not generate your snapshot right now. Please try again in a moment.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const yearsExperienceValue = Number.parseInt(formData.yearsExperience, 10);
     if (Number.isNaN(yearsExperienceValue) || yearsExperienceValue < 0) {
       setError('Please enter a valid number of years of experience.');
@@ -378,7 +398,13 @@ function Home() {
         work_preferences: formData.workPreferences || null,
         email: formData.email.trim(),
         full_name: formData.fullName || null,
-        submitted_at: new Date().toISOString()
+        submitted_at: new Date().toISOString(),
+        snapshot_how_work_may_evolve: aiSnapshot.howYourWorkMayEvolve,
+        snapshot_potential_future_directions: aiSnapshot.potentialFutureDirections,
+        snapshot_structured_next_steps: aiSnapshot.structuredNextSteps,
+        prompt_how_work_may_evolve: prompts.howYourWorkMayEvolve,
+        prompt_potential_future_directions: prompts.potentialFutureDirections,
+        prompt_structured_next_steps: prompts.structuredNextSteps
       });
 
       if (submissionError) {
@@ -394,6 +420,7 @@ function Home() {
       setIsSubmitting(false);
     }
 
+    setSnapshotResponses(aiSnapshot);
     setShowSnapshot(true);
     setIsAssessmentActive(false);
     setHasAssessmentStarted(false);
@@ -429,6 +456,7 @@ function Home() {
     setTransitionDirection('forward');
     setStepAnimationKey(0);
     setIsSubmitting(false);
+    setSnapshotResponses(null);
   };
 
   const startAssessment = () => {
@@ -967,6 +995,43 @@ function Home() {
               mode="full"
             />
           </div>
+          {snapshotResponses && (
+            <div className="mx-auto mt-16 max-w-5xl space-y-10">
+              <div className="text-center">
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">AI-generated outlook</p>
+                <h3 className="mt-4 text-3xl font-bold text-slate-900">Your future snapshot</h3>
+                <p className="mt-2 text-base text-slate-600">
+                  A concise view of how your career could evolve, based on the answers you shared.
+                </p>
+              </div>
+              <div className="grid gap-6 md:grid-cols-3">
+                {[
+                  {
+                    title: 'How your work may evolve',
+                    description: snapshotResponses.howYourWorkMayEvolve
+                  },
+                  {
+                    title: 'Potential future directions',
+                    description: snapshotResponses.potentialFutureDirections
+                  },
+                  {
+                    title: 'Structured next steps',
+                    description: snapshotResponses.structuredNextSteps
+                  }
+                ].map((section) => (
+                  <div
+                    key={section.title}
+                    className="rounded-2xl border border-slate-200 bg-white/80 p-6 text-left shadow-sm"
+                  >
+                    <h4 className="text-lg font-semibold text-slate-900">{section.title}</h4>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-700 whitespace-pre-line">
+                      {section.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
