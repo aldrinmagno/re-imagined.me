@@ -41,9 +41,9 @@ const AssessmentPreviewPanel = ({
       placeholder: 'Add your current job title'
     },
     {
-      label: 'Industry',
+      label: 'Industries',
       value: industryLabel ?? '',
-      placeholder: 'Choose your industry'
+      placeholder: 'Choose your industries'
     },
     {
       label: 'Experience',
