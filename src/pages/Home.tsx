@@ -469,7 +469,8 @@ function Home() {
         formData: {
           ...formData,
           strengths: strengthsWithOther,
-          lookingFor: lookingForSelections
+          lookingFor: lookingForSelections,
+          transitionTarget: transitionTargetValue
         },
         goalText,
         industryLabels
@@ -477,6 +478,10 @@ function Home() {
 
       const serializedStrengths = JSON.stringify(strengthsWithOther ?? []);
       const serializedLookingFor = JSON.stringify(lookingForSelections);
+      const transitionTarget =
+        lookingForSelections.includes('transition') && transitionTargetValue
+          ? transitionTargetValue
+          : null;
 
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
         job_title: formData.jobTitle,
@@ -485,6 +490,7 @@ function Home() {
         strengths: serializedStrengths,
         typical_week: formData.typicalWeek || null,
         looking_for: serializedLookingFor,
+        transition_target: transitionTarget,
         work_preferences: formData.workPreferences || null,
         email: formData.email.trim(),
         full_name: formData.fullName || null,
@@ -524,6 +530,9 @@ function Home() {
   } as const;
 
   const lookingForSelections = normalizeLookingFor(formData.lookingFor);
+  const transitionTargetValue = lookingForSelections.includes('transition')
+    ? formData.transitionTarget.trim()
+    : '';
   const goalLabels = lookingForSelections
     .map((value) => {
       if (value === 'transition' && formData.transitionTarget.trim()) {
