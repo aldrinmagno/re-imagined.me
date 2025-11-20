@@ -39,6 +39,7 @@ const createInitialFormData = (): AssessmentFormData => ({
   industry: [],
   yearsExperience: '',
   strengths: [],
+  strengthsOther: '',
   typicalWeek: '',
   lookingFor: '',
   workPreferences: '',
@@ -69,6 +70,19 @@ function Home() {
   const customJobTitleInputRef = useRef<HTMLInputElement | null>(null);
 
   const isAssessmentMode = isAssessmentActive && !showSnapshot;
+
+  const getStrengthsWithOther = (data: AssessmentFormData = formData) => {
+    const strengths = data.strengths || [];
+    const customStrength = data.strengthsOther.trim();
+    const hasOther = strengths.includes('other');
+    const baseStrengths = strengths.filter((value) => value !== 'other');
+
+    if (hasOther && customStrength) {
+      return [...baseStrengths, customStrength];
+    }
+
+    return baseStrengths;
+  };
 
   useEffect(() => {
     setStepAnimationKey((prev) => prev + 1);
@@ -168,7 +182,8 @@ function Home() {
         { value: 'sales-partnerships', label: 'Sales & partnerships' },
         { value: 'process-optimisation', label: 'Process optimisation' },
         { value: 'coaching-mentoring', label: 'Coaching & mentoring' },
-        { value: 'writing-storytelling', label: 'Writing & storytelling' }
+        { value: 'writing-storytelling', label: 'Writing & storytelling' },
+        { value: 'other', label: 'Other (write manually)' }
       ]
     },
     {
@@ -266,8 +281,13 @@ function Home() {
         const numeric = Number(value);
         return Number.isFinite(numeric) && numeric >= 0;
       }
-      case 'strengths':
-        return getFieldValue('strengths').length > 0;
+      case 'strengths': {
+        const strengths = getFieldValue('strengths');
+        const hasOther = strengths.includes('other');
+        const hasOtherText = getFieldValue('strengthsOther').trim().length > 0;
+        const hasStandardStrengths = strengths.filter((value) => value !== 'other').length > 0;
+        return hasStandardStrengths || (hasOther && hasOtherText);
+      }
       case 'lookingFor':
         return getFieldValue('lookingFor').trim().length > 0;
       case 'email': {
@@ -420,12 +440,12 @@ function Home() {
       }
 
       const insights = await generateSnapshotInsights({
-        formData,
+        formData: { ...formData, strengths: strengthsWithOther },
         goalText,
         industryLabels
       });
 
-      const serializedStrengths = JSON.stringify(formData.strengths ?? []);
+      const serializedStrengths = JSON.stringify(strengthsWithOther ?? []);
 
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
         job_title: formData.jobTitle,
@@ -480,6 +500,7 @@ function Home() {
     .filter((option) => formData.industry.includes(option.value))
     .map((option) => option.label);
   const industryLabel = industryLabels.join(', ');
+  const strengthsWithOther = getStrengthsWithOther();
 
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
@@ -955,6 +976,7 @@ function Home() {
 
                       if (step.type === 'multiselect' && step.options) {
                         if (step.id === 'strengths') {
+                          const isOtherSelected = stringArrayValue.includes('other');
                           return (
                             <div
                               className="flex flex-wrap gap-3"
@@ -963,6 +985,7 @@ function Home() {
                             >
                               {step.options.map((option, optionIndex) => {
                                 const isSelected = stringArrayValue.includes(option.value);
+                                const isOtherOption = option.value === 'other';
                                 return (
                                   <button
                                     key={option.value}
@@ -975,6 +998,12 @@ function Home() {
                                         step.id,
                                         updatedStrengths as AssessmentFormData[typeof step.id]
                                       );
+                                      if (isOtherOption && isSelected) {
+                                        handleFieldChange(
+                                          'strengthsOther',
+                                          '' as AssessmentFormData['strengthsOther']
+                                        );
+                                      }
                                     }}
                                     aria-pressed={isSelected}
                                     className={`rounded-full border px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 ${
@@ -992,6 +1021,33 @@ function Home() {
                                   </button>
                                 );
                               })}
+                              {isOtherSelected && (
+                                <div className="mt-2 w-full space-y-2">
+                                  <label
+                                    htmlFor={`${currentInputId}-other`}
+                                    className="block text-sm font-semibold text-slate-800"
+                                  >
+                                    Describe your other strengths
+                                  </label>
+                                  <input
+                                    id={`${currentInputId}-other`}
+                                    type="text"
+                                    value={formData.strengthsOther}
+                                    onChange={(event) =>
+                                      handleFieldChange(
+                                        'strengthsOther',
+                                        event.target.value as AssessmentFormData['strengthsOther']
+                                      )
+                                    }
+                                    className={`${commonInputClasses} max-w-xl`}
+                                    placeholder="e.g., domain expertise, unique tools, or niches"
+                                    aria-describedby={currentHelperTextId}
+                                  />
+                                  <p className="text-sm text-slate-500">
+                                    We'll include this alongside your selected strengths.
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           );
                         }
@@ -1242,7 +1298,7 @@ function Home() {
           {isAssessmentMode && (
             <div className="order-2 mt-8 w-full self-start lg:order-2 lg:mt-0 lg:sticky lg:top-24 lg:max-w-sm lg:justify-self-end">
               <AssessmentPreviewPanel
-                formData={formData}
+                formData={{ ...formData, strengths: strengthsWithOther }}
                 goalText={goalText}
                 industryLabel={industryLabel}
                 mode="live"
@@ -1258,7 +1314,7 @@ function Home() {
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.12),_transparent_60%)]" />
           <div className="mx-auto max-w-4xl">
             <AssessmentPreviewPanel
-              formData={formData}
+              formData={{ ...formData, strengths: strengthsWithOther }}
               goalText={goalText}
               industryLabel={industryLabel}
               mode="full"

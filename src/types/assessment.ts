@@ -3,6 +3,7 @@ export interface AssessmentFormData {
   industry: string[];
   yearsExperience: string;
   strengths: string[];
+  strengthsOther: string;
   typicalWeek: string;
   lookingFor: string;
   workPreferences: string;
