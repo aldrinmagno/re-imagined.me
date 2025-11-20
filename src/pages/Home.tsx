@@ -127,6 +127,10 @@ function Home() {
         { value: 'software-tech', label: 'Software / Tech' },
         { value: 'design-creative', label: 'Design / Creative' },
         { value: 'marketing-sales', label: 'Marketing / Sales' },
+        {
+          value: 'Banking / Financial Services',
+          label: 'Banking / Financial Services'
+        },
         { value: 'finance-accounting', label: 'Finance / Accounting' },
         { value: 'operations-admin', label: 'Operations / Admin' },
         { value: 'healthcare', label: 'Healthcare' },
