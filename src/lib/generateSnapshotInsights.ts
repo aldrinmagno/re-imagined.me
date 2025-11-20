@@ -9,18 +9,22 @@ interface SnapshotInput {
 const formatIndustries = (industries?: string[]) =>
   industries && industries.length > 0 ? industries.join(', ') : null;
 
+const formatStrengths = (strengths?: string[]) =>
+  strengths && strengths.length > 0 ? strengths.join(', ') : null;
+
 const createFallbackInsights = ({
   formData,
   goalText,
   industryLabels
 }: SnapshotInput): SnapshotInsights => {
   const industryText = formatIndustries(industryLabels) ?? 'your space';
+  const strengthsText = formatStrengths(formData.strengths) ?? 'core capabilities';
 
   return {
     workEvolution:
       `Expect the ${formData.jobTitle || 'role'} in ${industryText} to lean more on judgement, partner communication, and orchestration as automation absorbs the repetitive pieces of your workflow.`,
     futureDirections:
-      `Blend your strengths in ${formData.strengths || 'core capabilities'} with ${goalText} to explore adjacent roles that translate your domain knowledge into higher-leverage work.`,
+      `Blend your strengths in ${strengthsText} with ${goalText} to explore adjacent roles that translate your domain knowledge into higher-leverage work.`,
     nextSteps:
       'Focus your next 90 days on clarifying outcomes, upskilling in AI-enabled tooling, and piloting a project that showcases how you solve emerging problems.'
   };
@@ -80,7 +84,9 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
             role: 'user',
             content: `Create a short snapshot for someone currently working as ${input.formData.jobTitle || 'a professional'} in ${
               formatIndustries(input.industryLabels) ?? 'their industry'
-            }. They are looking to ${input.goalText}. Their key strengths are ${input.formData.strengths || 'not specified'} and their work preferences include ${
+            }. They are looking to ${input.goalText}. Their key strengths are ${
+              formatStrengths(input.formData.strengths) ?? 'not specified'
+            } and their work preferences include ${
               input.formData.workPreferences || 'not specified'
             }. Include nods to how their typical work may evolve (${input.formData.typicalWeek || 'no rhythm provided'}).`
           }
