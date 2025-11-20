@@ -41,7 +41,7 @@ const createInitialFormData = (): AssessmentFormData => ({
   strengths: [],
   strengthsOther: '',
   typicalWeek: '',
-  lookingFor: '',
+  lookingFor: [],
   workPreferences: '',
   fullName: '',
   email: '',
@@ -82,6 +82,18 @@ function Home() {
     }
 
     return baseStrengths;
+  };
+
+  const normalizeLookingFor = (value: AssessmentFormData['lookingFor']) => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (value) {
+      return [value];
+    }
+
+    return [];
   };
 
   useEffect(() => {
@@ -199,8 +211,9 @@ function Home() {
       id: 'lookingFor',
       title: 'Your direction',
       prompt: 'What are you mainly looking for right now?',
-      type: 'radio',
+      type: 'multiselect',
       required: true,
+      helperText: 'Select all that apply to your current priorities.',
       options: [
         {
           value: 'pioneer',
@@ -290,7 +303,7 @@ function Home() {
         return hasStandardStrengths || (hasOther && hasOtherText);
       }
       case 'lookingFor':
-        return getFieldValue('lookingFor').trim().length > 0;
+        return normalizeLookingFor(getFieldValue('lookingFor')).length > 0;
       case 'email': {
         const value = getFieldValue('email').trim();
         if (!value) return false;
@@ -391,7 +404,7 @@ function Home() {
       !formData.yearsExperience ||
       !formData.strengths.length ||
       !formData.email ||
-      !formData.lookingFor
+      !normalizeLookingFor(formData.lookingFor).length
     ) {
       setError('Please fill in all required fields before submitting.');
       return;
@@ -441,12 +454,17 @@ function Home() {
       }
 
       const insights = await generateSnapshotInsights({
-        formData: { ...formData, strengths: strengthsWithOther },
+        formData: {
+          ...formData,
+          strengths: strengthsWithOther,
+          lookingFor: lookingForSelections
+        },
         goalText,
         industryLabels
       });
 
       const serializedStrengths = JSON.stringify(strengthsWithOther ?? []);
+      const serializedLookingFor = JSON.stringify(lookingForSelections);
 
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
         job_title: formData.jobTitle,
@@ -454,7 +472,7 @@ function Home() {
         years_experience: yearsExperienceValue,
         strengths: serializedStrengths,
         typical_week: formData.typicalWeek || null,
-        looking_for: formData.lookingFor,
+        looking_for: serializedLookingFor,
         work_preferences: formData.workPreferences || null,
         email: formData.email.trim(),
         full_name: formData.fullName || null,
@@ -493,8 +511,11 @@ function Home() {
     pioneer: 'Chart a path into roles that do not yet exist at scale'
   } as const;
 
-  const goalText =
-    goalLabelMap[formData.lookingFor as keyof typeof goalLabelMap] ?? 'your next chapter';
+  const lookingForSelections = normalizeLookingFor(formData.lookingFor);
+  const goalLabels = lookingForSelections
+    .map((value) => goalLabelMap[value as keyof typeof goalLabelMap] ?? value)
+    .filter(Boolean);
+  const goalText = goalLabels.length > 0 ? goalLabels.join(', ') : 'your next chapter';
 
   const industryOptions = steps.find((step) => step.id === 'industry')?.options ?? [];
   const industryLabels = industryOptions
@@ -758,7 +779,11 @@ function Home() {
                       const step = currentStepDefinition;
                       const fieldValue = getFieldValue(step.id);
                       const stringValue = typeof fieldValue === 'string' ? fieldValue : '';
-                      const stringArrayValue = Array.isArray(fieldValue) ? fieldValue : [];
+                      const stringArrayValue = Array.isArray(fieldValue)
+                        ? fieldValue
+                        : step.id === 'lookingFor'
+                          ? normalizeLookingFor(fieldValue as AssessmentFormData['lookingFor'])
+                          : [];
                       const commonInputClasses = `w-full rounded-xl border px-4 py-3 text-base transition focus:outline-none focus:ring-2 focus:border-transparent ${
                         isAssessmentMode
                           ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'

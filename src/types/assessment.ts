@@ -5,7 +5,7 @@ export interface AssessmentFormData {
   strengths: string[];
   strengthsOther: string;
   typicalWeek: string;
-  lookingFor: string;
+  lookingFor: string | string[];
   workPreferences: string;
   fullName: string;
   email: string;

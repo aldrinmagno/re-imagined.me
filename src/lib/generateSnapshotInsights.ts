@@ -12,6 +12,18 @@ const formatIndustries = (industries?: string[]) =>
 const formatStrengths = (strengths?: string[]) =>
   strengths && strengths.length > 0 ? strengths.join(', ') : null;
 
+const normalizeLookingFor = (value: AssessmentFormData['lookingFor']) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value) {
+    return [value];
+  }
+
+  return [];
+};
+
 const buildStructuredSignals = (input: SnapshotInput) => {
   const trimmedOther = input.formData.strengthsOther?.trim();
 
@@ -19,7 +31,7 @@ const buildStructuredSignals = (input: SnapshotInput) => {
     jobTitle: input.formData.jobTitle || null,
     industries: input.industryLabels ?? [],
     yearsExperience: input.formData.yearsExperience || null,
-    lookingFor: input.formData.lookingFor || null,
+    lookingFor: normalizeLookingFor(input.formData.lookingFor),
     strengths: input.formData.strengths ?? [],
     strengthsOther: trimmedOther ? trimmedOther : null,
     workPreferences: input.formData.workPreferences || null,

@@ -36,6 +36,10 @@ const AssessmentPreviewPanel = ({
   mode,
   snapshotInsights
 }: AssessmentPreviewPanelProps) => {
+  const hasLookingFor = Array.isArray(formData.lookingFor)
+    ? formData.lookingFor.length > 0
+    : Boolean(formData.lookingFor);
+
   const detailItems = [
     {
       label: 'Current role',
@@ -56,7 +60,7 @@ const AssessmentPreviewPanel = ({
     },
     {
       label: 'Primary focus',
-      value: formData.lookingFor ? goalText : '',
+      value: hasLookingFor ? goalText : '',
       placeholder: 'Select what you are looking for next'
     }
   ];
