@@ -6,6 +6,7 @@ import { getSupabaseClient } from '../lib/supabaseClient';
 import { generateSnapshotInsights } from '../lib/generateSnapshotInsights';
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 import { useAuth } from '../context/AuthContext';
+import { jobTitles } from '../data/jobTitles';
 
 type StepType = 'input' | 'textarea' | 'select' | 'radio' | 'signup';
 
@@ -59,8 +60,11 @@ function Home() {
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snapshotInsights, setSnapshotInsights] = useState<SnapshotInsights | null>(null);
+  const [isJobTitleOpen, setIsJobTitleOpen] = useState(false);
+  const [jobTitleQuery, setJobTitleQuery] = useState('');
 
   const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
+  const jobTitleDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
@@ -79,6 +83,24 @@ function Home() {
       document.body.style.overflow = '';
     };
   }, [isAssessmentMode]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        jobTitleDropdownRef.current &&
+        !jobTitleDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsJobTitleOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setJobTitleQuery(formData.jobTitle);
+  }, [formData.jobTitle]);
 
   const stepAnimationClass =
     transitionDirection === 'forward' ? 'animate-step-forward' : 'animate-step-backward';
@@ -684,6 +706,94 @@ function Home() {
                           ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
                           : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
                       }`;
+
+                      if (step.id === 'jobTitle') {
+                        const filteredJobTitles = jobTitles.filter((title) =>
+                          title.toLowerCase().includes(jobTitleQuery.toLowerCase().trim())
+                        );
+
+                        const selectJobTitle = (title: string) => {
+                          handleFieldChange(step.id, title);
+                          setJobTitleQuery(title);
+                          setIsJobTitleOpen(false);
+                        };
+
+                        return (
+                          <div className="relative" ref={jobTitleDropdownRef}>
+                            <label htmlFor={currentInputId} className="sr-only">
+                              {step.prompt}
+                            </label>
+                            <input
+                              id={currentInputId}
+                              role="combobox"
+                              aria-expanded={isJobTitleOpen}
+                              aria-controls="job-title-listbox"
+                              aria-autocomplete="list"
+                              type="text"
+                              value={getFieldValue(step.id)}
+                              onFocus={() => setIsJobTitleOpen(true)}
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                handleFieldChange(step.id, value);
+                                setJobTitleQuery(value);
+                                setIsJobTitleOpen(true);
+                              }}
+                              onKeyDown={handleEnterKey}
+                              placeholder={step.placeholder}
+                              className={`${commonInputClasses} pr-10`}
+                              aria-describedby={currentHelperTextId}
+                              ref={(element: HTMLInputElement | null) => {
+                                interactiveRefs.current[step.id] = element;
+                              }}
+                            />
+                            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                              <svg
+                                className="h-4 w-4"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  d="M5 7.5L10 12.5L15 7.5"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                            {isJobTitleOpen && (
+                              <div
+                                id="job-title-listbox"
+                                role="listbox"
+                                className="absolute z-20 mt-2 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+                              >
+                                {filteredJobTitles.length > 0 ? (
+                                  filteredJobTitles.map((title) => (
+                                    <button
+                                      type="button"
+                                      key={title}
+                                      role="option"
+                                      aria-selected={getFieldValue(step.id) === title}
+                                      onMouseDown={(event) => event.preventDefault()}
+                                      onClick={() => {
+                                        selectJobTitle(title);
+                                        maybeAutoAdvance();
+                                      }}
+                                      className="block w-full px-4 py-2 text-left text-slate-800 transition hover:bg-emerald-50"
+                                    >
+                                      {title}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="px-4 py-3 text-sm text-slate-500">No matching job titles</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
 
                       if (step.type === 'input') {
                         return (
