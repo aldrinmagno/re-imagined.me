@@ -425,11 +425,13 @@ function Home() {
         industryLabels
       });
 
+      const serializedStrengths = JSON.stringify(formData.strengths ?? []);
+
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
         job_title: formData.jobTitle,
         industry: formData.industry,
         years_experience: yearsExperienceValue,
-        strengths: formData.strengths,
+        strengths: serializedStrengths,
         typical_week: formData.typicalWeek || null,
         looking_for: formData.lookingFor,
         work_preferences: formData.workPreferences || null,
