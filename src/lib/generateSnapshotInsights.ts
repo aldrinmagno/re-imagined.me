@@ -32,6 +32,7 @@ const buildStructuredSignals = (input: SnapshotInput) => {
     industries: input.industryLabels ?? [],
     yearsExperience: input.formData.yearsExperience || null,
     lookingFor: normalizeLookingFor(input.formData.lookingFor),
+    transitionTarget: input.formData.transitionTarget?.trim() || null,
     strengths: input.formData.strengths ?? [],
     strengthsOther: trimmedOther ? trimmedOther : null,
     workPreferences: input.formData.workPreferences || null,
@@ -116,7 +117,11 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
             role: 'user',
             content: `Create a short snapshot for someone currently working as ${input.formData.jobTitle || 'a professional'} in ${
               formatIndustries(input.industryLabels) ?? 'their industry'
-            }. They are looking to ${input.goalText}. Their key strengths are ${
+            }. They are looking to ${input.goalText}${
+              input.formData.transitionTarget?.trim()
+                ? `. They want to transition into ${input.formData.transitionTarget.trim()}`
+                : ''
+            }. Their key strengths are ${
               formatStrengths(input.formData.strengths) ?? 'not specified'
             } and their work preferences include ${
               input.formData.workPreferences || 'not specified'
