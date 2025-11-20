@@ -192,7 +192,8 @@ function Home() {
       prompt: 'What does a typical workweek look like for you?',
       type: 'textarea',
       rows: 5,
-      helperText: 'Optional — describe 3–5 key activities and roughly how much time each takes.'
+      helperText:
+        'Optional — outline key tasks and time patterns (e.g., 50% client meetings, 30% analysis, 20% admin; mornings for deep work; on-site Tue–Thu).'
     },
     {
       id: 'lookingFor',
