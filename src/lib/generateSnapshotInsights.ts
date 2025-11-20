@@ -12,6 +12,21 @@ const formatIndustries = (industries?: string[]) =>
 const formatStrengths = (strengths?: string[]) =>
   strengths && strengths.length > 0 ? strengths.join(', ') : null;
 
+const buildStructuredSignals = (input: SnapshotInput) => {
+  const trimmedOther = input.formData.strengthsOther?.trim();
+
+  return {
+    jobTitle: input.formData.jobTitle || null,
+    industries: input.industryLabels ?? [],
+    yearsExperience: input.formData.yearsExperience || null,
+    lookingFor: input.formData.lookingFor || null,
+    strengths: input.formData.strengths ?? [],
+    strengthsOther: trimmedOther ? trimmedOther : null,
+    workPreferences: input.formData.workPreferences || null,
+    typicalWeek: input.formData.typicalWeek || null
+  };
+};
+
 const createFallbackInsights = ({
   formData,
   goalText,
@@ -58,6 +73,7 @@ const parseInsightsFromContent = (content: string): SnapshotInsights | null => {
 
 export const generateSnapshotInsights = async (input: SnapshotInput): Promise<SnapshotInsights> => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const structuredSignals = buildStructuredSignals(input);
 
   if (!apiKey) {
     console.warn('Missing OpenAI API key; using fallback snapshot insights.');
@@ -79,6 +95,10 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
             role: 'system',
             content:
               'You are a concise career strategist. Return JSON only with keys workEvolution, futureDirections, nextSteps. Each value must be no more than 60 words.'
+          },
+          {
+            role: 'user',
+            content: `Structured signals for analytics and recommendations: ${JSON.stringify(structuredSignals)}`
           },
           {
             role: 'user',
