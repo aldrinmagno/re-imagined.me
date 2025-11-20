@@ -5,7 +5,7 @@ create table if not exists public.assessment_responses (
   created_at timestamptz not null default now(),
   submitted_at timestamptz not null default now(),
   job_title text not null,
-  industry text not null,
+  industry text[] not null,
   years_experience integer not null check (years_experience >= 0),
   strengths text not null,
   typical_week text,

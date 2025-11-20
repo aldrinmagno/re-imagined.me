@@ -8,7 +8,7 @@ import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 import { useAuth } from '../context/AuthContext';
 import { jobTitles } from '../data/jobTitles';
 
-type StepType = 'input' | 'textarea' | 'select' | 'radio' | 'signup';
+type StepType = 'input' | 'textarea' | 'select' | 'multiselect' | 'radio' | 'signup';
 
 type InputModeType =
   | 'none'
@@ -36,7 +36,7 @@ interface StepDefinition {
 
 const createInitialFormData = (): AssessmentFormData => ({
   jobTitle: '',
-  industry: '',
+  industry: [],
   yearsExperience: '',
   strengths: '',
   typicalWeek: '',
@@ -119,10 +119,10 @@ function Home() {
     {
       id: 'industry',
       title: 'Your context',
-      prompt: 'Which industry are you working in?',
-      type: 'select',
+      prompt: 'Which industries are you working in?',
+      type: 'multiselect',
       required: true,
-      placeholder: 'Select your industry',
+      placeholder: 'Select your industries',
       options: [
         { value: 'software-tech', label: 'Software / Tech' },
         { value: 'design-creative', label: 'Design / Creative' },
@@ -230,7 +230,8 @@ function Home() {
     }
   };
 
-  const getFieldValue = (field: keyof AssessmentFormData) => formData[field] ?? '';
+  const getFieldValue = <K extends keyof AssessmentFormData>(field: K): AssessmentFormData[K] =>
+    formData[field];
 
   const isStepValid = (stepIndex: number) => {
     const step = steps[stepIndex];
@@ -243,8 +244,10 @@ function Home() {
     switch (step.id) {
       case 'jobTitle':
         return getFieldValue('jobTitle').trim().length > 0;
-      case 'industry':
-        return getFieldValue('industry').trim().length > 0;
+      case 'industry': {
+        const industries = getFieldValue('industry');
+        return industries.length > 0;
+      }
       case 'yearsExperience': {
         const value = getFieldValue('yearsExperience').trim();
         if (value === '') return false;
@@ -268,7 +271,10 @@ function Home() {
     }
   };
 
-  const handleFieldChange = (field: keyof AssessmentFormData, value: string) => {
+  const handleFieldChange = <K extends keyof AssessmentFormData>(
+    field: K,
+    value: AssessmentFormData[K]
+  ) => {
     if (!isAssessmentActive) {
       setHasAssessmentStarted(true);
       setIsAssessmentActive(true);
@@ -346,7 +352,7 @@ function Home() {
       return;
     }
 
-    if (!formData.jobTitle || !formData.industry || !formData.yearsExperience ||
+    if (!formData.jobTitle || !formData.industry.length || !formData.yearsExperience ||
         !formData.strengths || !formData.email || !formData.lookingFor) {
       setError('Please fill in all required fields before submitting.');
       return;
@@ -398,7 +404,7 @@ function Home() {
       const insights = await generateSnapshotInsights({
         formData,
         goalText,
-        industryLabel
+        industryLabels
       });
 
       const { error: submissionError } = await supabase.from('assessment_responses').insert({
@@ -449,10 +455,11 @@ function Home() {
   const goalText =
     goalLabelMap[formData.lookingFor as keyof typeof goalLabelMap] ?? 'your next chapter';
 
-  const industryLabel =
-    steps
-      .find((step) => step.id === 'industry')
-      ?.options?.find((option) => option.value === formData.industry)?.label ?? '';
+  const industryOptions = steps.find((step) => step.id === 'industry')?.options ?? [];
+  const industryLabels = industryOptions
+    .filter((option) => formData.industry.includes(option.value))
+    .map((option) => option.label);
+  const industryLabel = industryLabels.join(', ');
 
   const handleExitAssessment = () => {
     setIsAssessmentActive(false);
@@ -707,6 +714,9 @@ function Home() {
                   <div>
                     {(() => {
                       const step = currentStepDefinition;
+                      const fieldValue = getFieldValue(step.id);
+                      const stringValue = typeof fieldValue === 'string' ? fieldValue : '';
+                      const stringArrayValue = Array.isArray(fieldValue) ? fieldValue : [];
                       const commonInputClasses = `w-full rounded-xl border px-4 py-3 text-base transition focus:outline-none focus:ring-2 focus:border-transparent ${
                         isAssessmentMode
                           ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-emerald-200/60'
@@ -783,7 +793,7 @@ function Home() {
                                       type="button"
                                       key={title}
                                       role="option"
-                                      aria-selected={getFieldValue(step.id) === title}
+                                      aria-selected={stringValue === title}
                                       onMouseDown={(event) => event.preventDefault()}
                                       onClick={() => {
                                         selectJobTitle(title);
@@ -827,7 +837,7 @@ function Home() {
                                 <input
                                   id={`${currentInputId}-custom`}
                                   type="text"
-                                  value={getFieldValue(step.id)}
+                                  value={stringValue}
                                   onChange={(event) => handleFieldChange(step.id, event.target.value)}
                                   onKeyDown={handleEnterKey}
                                   placeholder="Type your job title"
@@ -854,7 +864,7 @@ function Home() {
                               id={currentInputId}
                               type={step.inputType ?? 'text'}
                               inputMode={step.inputMode}
-                              value={getFieldValue(step.id)}
+                              value={stringValue}
                               onChange={(event) => handleFieldChange(step.id, event.target.value)}
                               onKeyDown={handleEnterKey}
                               placeholder={step.placeholder}
@@ -877,7 +887,7 @@ function Home() {
                             </label>
                             <textarea
                               id={currentInputId}
-                              value={getFieldValue(step.id)}
+                              value={stringValue}
                               onChange={(event) => handleFieldChange(step.id, event.target.value)}
                               placeholder={step.placeholder}
                               rows={step.rows ?? 4}
@@ -899,7 +909,7 @@ function Home() {
                             </label>
                             <select
                               id={currentInputId}
-                              value={getFieldValue(step.id)}
+                              value={stringValue}
                               onChange={(event) => {
                                 handleFieldChange(step.id, event.target.value);
                                 if (event.target.value) {
@@ -923,6 +933,61 @@ function Home() {
                         );
                       }
 
+                      if (step.type === 'multiselect' && step.options) {
+                        return (
+                          <fieldset
+                            className="space-y-3"
+                            aria-describedby={currentHelperTextId}
+                          >
+                            <legend className="sr-only">{step.prompt}</legend>
+                            {step.options.map((option, optionIndex) => {
+                              const optionId = `${currentInputId}-${option.value}`;
+                              const isSelected = stringArrayValue.includes(option.value);
+                              return (
+                                <label
+                                  key={option.value}
+                                  htmlFor={optionId}
+                                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
+                                    isSelected
+                                      ? isAssessmentMode
+                                        ? 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
+                                        : 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
+                                      : isAssessmentMode
+                                        ? 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
+                                        : 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
+                                  }`}
+                                >
+                                  <input
+                                    id={optionId}
+                                    type="checkbox"
+                                    name={`${step.id}-${option.value}`}
+                                    value={option.value}
+                                    checked={isSelected}
+                                    onChange={(event) => {
+                                      const updatedIndustries = event.target.checked
+                                        ? [...stringArrayValue, option.value]
+                                        : stringArrayValue.filter((value) => value !== option.value);
+                                      handleFieldChange(step.id, updatedIndustries as AssessmentFormData[typeof step.id]);
+                                    }}
+                                    className={`mt-1 focus:ring-2 ${
+                                      isAssessmentMode
+                                        ? 'text-emerald-500 focus:ring-emerald-200'
+                                        : 'text-emerald-500 focus:ring-emerald-200'
+                                    }`}
+                                    ref={(element: HTMLInputElement | null) => {
+                                      if (optionIndex === 0) {
+                                        interactiveRefs.current[step.id] = element;
+                                      }
+                                    }}
+                                  />
+                                  <span className="text-slate-800">{option.label}</span>
+                                </label>
+                              );
+                            })}
+                          </fieldset>
+                        );
+                      }
+
                       if (step.type === 'radio' && step.options) {
                         return (
                           <fieldset
@@ -932,7 +997,7 @@ function Home() {
                             <legend className="sr-only">{step.prompt}</legend>
                             {step.options.map((option, optionIndex) => {
                               const optionId = `${currentInputId}-${option.value}`;
-                              const isSelected = getFieldValue(step.id) === option.value;
+                              const isSelected = stringValue === option.value;
                               return (
                                 <label
                                   key={option.value}
