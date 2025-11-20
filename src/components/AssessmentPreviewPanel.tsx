@@ -27,6 +27,8 @@ const truncateCopy = (value: string, length = 140) => {
   return `${value.slice(0, length).trim()}…`;
 };
 
+const formatStrengths = (strengths: string[]) => strengths.join(', ');
+
 const AssessmentPreviewPanel = ({
   formData,
   goalText,
@@ -62,7 +64,7 @@ const AssessmentPreviewPanel = ({
   const liveSections = [
     {
       title: 'Strengths we can build on',
-      value: truncateCopy(formData.strengths),
+      value: truncateCopy(formatStrengths(formData.strengths)),
       placeholder:
         'Share the skills, capabilities, or superpowers you rely on most.'
     },

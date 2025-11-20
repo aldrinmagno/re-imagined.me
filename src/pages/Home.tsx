@@ -38,7 +38,7 @@ const createInitialFormData = (): AssessmentFormData => ({
   jobTitle: '',
   industry: [],
   yearsExperience: '',
-  strengths: '',
+  strengths: [],
   typicalWeek: '',
   lookingFor: '',
   workPreferences: '',
@@ -153,11 +153,23 @@ function Home() {
       id: 'strengths',
       title: 'Your strengths & skills',
       prompt: 'What do you consider your core strengths and skills?',
-      type: 'textarea',
+      type: 'multiselect',
       required: true,
-      rows: 5,
-      placeholder:
-        'E.g., stakeholder communication, JavaScript, system design, UX research, teaching, financial modelling…'
+      helperText: 'Select all that apply — you can choose multiple.',
+      options: [
+        { value: 'leadership', label: 'Leadership & people management' },
+        { value: 'stakeholder-communication', label: 'Stakeholder communication' },
+        { value: 'product-strategy', label: 'Product strategy' },
+        { value: 'user-research', label: 'User research' },
+        { value: 'data-analysis', label: 'Data analysis & insights' },
+        { value: 'technical-architecture', label: 'Technical architecture' },
+        { value: 'project-delivery', label: 'Project management & delivery' },
+        { value: 'design-thinking', label: 'Design thinking & UX' },
+        { value: 'sales-partnerships', label: 'Sales & partnerships' },
+        { value: 'process-optimisation', label: 'Process optimisation' },
+        { value: 'coaching-mentoring', label: 'Coaching & mentoring' },
+        { value: 'writing-storytelling', label: 'Writing & storytelling' }
+      ]
     },
     {
       id: 'typicalWeek',
@@ -255,7 +267,7 @@ function Home() {
         return Number.isFinite(numeric) && numeric >= 0;
       }
       case 'strengths':
-        return getFieldValue('strengths').trim().length > 0;
+        return getFieldValue('strengths').length > 0;
       case 'lookingFor':
         return getFieldValue('lookingFor').trim().length > 0;
       case 'email': {
@@ -352,8 +364,14 @@ function Home() {
       return;
     }
 
-    if (!formData.jobTitle || !formData.industry.length || !formData.yearsExperience ||
-        !formData.strengths || !formData.email || !formData.lookingFor) {
+    if (
+      !formData.jobTitle ||
+      !formData.industry.length ||
+      !formData.yearsExperience ||
+      !formData.strengths.length ||
+      !formData.email ||
+      !formData.lookingFor
+    ) {
       setError('Please fill in all required fields before submitting.');
       return;
     }
@@ -934,6 +952,48 @@ function Home() {
                       }
 
                       if (step.type === 'multiselect' && step.options) {
+                        if (step.id === 'strengths') {
+                          return (
+                            <div
+                              className="flex flex-wrap gap-3"
+                              role="group"
+                              aria-describedby={currentHelperTextId}
+                            >
+                              {step.options.map((option, optionIndex) => {
+                                const isSelected = stringArrayValue.includes(option.value);
+                                return (
+                                  <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedStrengths = isSelected
+                                        ? stringArrayValue.filter((value) => value !== option.value)
+                                        : [...stringArrayValue, option.value];
+                                      handleFieldChange(
+                                        step.id,
+                                        updatedStrengths as AssessmentFormData[typeof step.id]
+                                      );
+                                    }}
+                                    aria-pressed={isSelected}
+                                    className={`rounded-full border px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 ${
+                                      isSelected
+                                        ? 'border-emerald-300 bg-emerald-50 text-emerald-800 shadow-inner shadow-emerald-200/60 focus:ring-emerald-200'
+                                        : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 focus:ring-emerald-200'
+                                    }`}
+                                    ref={(element: HTMLButtonElement | null) => {
+                                      if (optionIndex === 0) {
+                                        interactiveRefs.current[step.id] = element;
+                                      }
+                                    }}
+                                  >
+                                    {option.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          );
+                        }
+
                         return (
                           <fieldset
                             className="space-y-3"
