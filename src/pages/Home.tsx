@@ -62,9 +62,11 @@ function Home() {
   const [snapshotInsights, setSnapshotInsights] = useState<SnapshotInsights | null>(null);
   const [isJobTitleOpen, setIsJobTitleOpen] = useState(false);
   const [jobTitleQuery, setJobTitleQuery] = useState('');
+  const [isCustomJobTitle, setIsCustomJobTitle] = useState(false);
 
   const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
   const jobTitleDropdownRef = useRef<HTMLDivElement | null>(null);
+  const customJobTitleInputRef = useRef<HTMLInputElement | null>(null);
 
   const isAssessmentMode = isAssessmentActive && !showSnapshot;
 
@@ -716,6 +718,7 @@ function Home() {
                           handleFieldChange(step.id, title);
                           setJobTitleQuery(title);
                           setIsJobTitleOpen(false);
+                          setIsCustomJobTitle(false);
                         };
 
                         return (
@@ -730,13 +733,14 @@ function Home() {
                               aria-controls="job-title-listbox"
                               aria-autocomplete="list"
                               type="text"
-                              value={getFieldValue(step.id)}
+                              value={jobTitleQuery}
                               onFocus={() => setIsJobTitleOpen(true)}
                               onChange={(event) => {
                                 const value = event.target.value;
                                 handleFieldChange(step.id, value);
                                 setJobTitleQuery(value);
                                 setIsJobTitleOpen(true);
+                                setIsCustomJobTitle(false);
                               }}
                               onKeyDown={handleEnterKey}
                               placeholder={step.placeholder}
@@ -789,6 +793,47 @@ function Home() {
                                 ) : (
                                   <div className="px-4 py-3 text-sm text-slate-500">No matching job titles</div>
                                 )}
+                                <div className="border-t border-slate-100">
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={isCustomJobTitle}
+                                    onMouseDown={(event) => event.preventDefault()}
+                                    onClick={() => {
+                                      setIsCustomJobTitle(true);
+                                      setIsJobTitleOpen(false);
+                                      setJobTitleQuery('Other');
+                                      handleFieldChange(step.id, '');
+                                      requestAnimationFrame(() => {
+                                        customJobTitleInputRef.current?.focus();
+                                      });
+                                    }}
+                                    className="block w-full px-4 py-2 text-left text-slate-800 transition hover:bg-emerald-50"
+                                  >
+                                    Other
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                            {isCustomJobTitle && (
+                              <div className="mt-3">
+                                <label htmlFor={`${currentInputId}-custom`} className="sr-only">
+                                  Enter your job title
+                                </label>
+                                <input
+                                  id={`${currentInputId}-custom`}
+                                  type="text"
+                                  value={getFieldValue(step.id)}
+                                  onChange={(event) => handleFieldChange(step.id, event.target.value)}
+                                  onKeyDown={handleEnterKey}
+                                  placeholder="Type your job title"
+                                  className={commonInputClasses}
+                                  aria-describedby={currentHelperTextId}
+                                  ref={(element: HTMLInputElement | null) => {
+                                    customJobTitleInputRef.current = element;
+                                    interactiveRefs.current[step.id] = element;
+                                  }}
+                                />
                               </div>
                             )}
                           </div>
