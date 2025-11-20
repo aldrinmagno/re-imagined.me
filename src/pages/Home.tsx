@@ -42,6 +42,7 @@ const createInitialFormData = (): AssessmentFormData => ({
   strengthsOther: '',
   typicalWeek: '',
   lookingFor: [],
+  transitionTarget: '',
   workPreferences: '',
   fullName: '',
   email: '',
@@ -302,8 +303,13 @@ function Home() {
         const hasStandardStrengths = strengths.filter((value) => value !== 'other').length > 0;
         return hasStandardStrengths || (hasOther && hasOtherText);
       }
-      case 'lookingFor':
-        return normalizeLookingFor(getFieldValue('lookingFor')).length > 0;
+      case 'lookingFor': {
+        const lookingForSelections = normalizeLookingFor(getFieldValue('lookingFor'));
+        const hasTransitionFocus = lookingForSelections.includes('transition');
+        const hasPrimaryFocus = lookingForSelections.length > 0;
+        const hasTransitionDetail = formData.transitionTarget.trim().length > 0;
+        return hasPrimaryFocus && (!hasTransitionFocus || hasTransitionDetail);
+      }
       case 'email': {
         const value = getFieldValue('email').trim();
         if (!value) return false;
@@ -410,6 +416,12 @@ function Home() {
       return;
     }
 
+    const lookingForSelections = normalizeLookingFor(formData.lookingFor);
+    if (lookingForSelections.includes('transition') && !formData.transitionTarget.trim()) {
+      setError('Please specify the role or discipline you want to transition into.');
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email address.');
@@ -513,7 +525,13 @@ function Home() {
 
   const lookingForSelections = normalizeLookingFor(formData.lookingFor);
   const goalLabels = lookingForSelections
-    .map((value) => goalLabelMap[value as keyof typeof goalLabelMap] ?? value)
+    .map((value) => {
+      if (value === 'transition' && formData.transitionTarget.trim()) {
+        return `${goalLabelMap.transition} (${formData.transitionTarget.trim()})`;
+      }
+
+      return goalLabelMap[value as keyof typeof goalLabelMap] ?? value;
+    })
     .filter(Boolean);
   const goalText = goalLabels.length > 0 ? goalLabels.join(', ') : 'your next chapter';
 
@@ -1078,57 +1096,99 @@ function Home() {
                           );
                         }
 
+                        const isTransitionSelected = step.id === 'lookingFor'
+                          ? stringArrayValue.includes('transition')
+                          : false;
+
                         return (
-                          <fieldset
-                            className="space-y-3"
-                            aria-describedby={currentHelperTextId}
-                          >
-                            <legend className="sr-only">{step.prompt}</legend>
-                            {step.options.map((option, optionIndex) => {
-                              const optionId = `${currentInputId}-${option.value}`;
-                              const isSelected = stringArrayValue.includes(option.value);
-                              return (
-                                <label
-                                  key={option.value}
-                                  htmlFor={optionId}
-                                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
-                                    isSelected
-                                      ? isAssessmentMode
-                                        ? 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
-                                        : 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
-                                      : isAssessmentMode
-                                        ? 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
-                                        : 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
-                                  }`}
-                                >
-                                  <input
-                                    id={optionId}
-                                    type="checkbox"
-                                    name={`${step.id}-${option.value}`}
-                                    value={option.value}
-                                    checked={isSelected}
-                                    onChange={(event) => {
-                                      const updatedIndustries = event.target.checked
-                                        ? [...stringArrayValue, option.value]
-                                        : stringArrayValue.filter((value) => value !== option.value);
-                                      handleFieldChange(step.id, updatedIndustries as AssessmentFormData[typeof step.id]);
-                                    }}
-                                    className={`mt-1 focus:ring-2 ${
-                                      isAssessmentMode
-                                        ? 'text-emerald-500 focus:ring-emerald-200'
-                                        : 'text-emerald-500 focus:ring-emerald-200'
+                          <div className="space-y-4">
+                            <fieldset
+                              className="space-y-3"
+                              aria-describedby={currentHelperTextId}
+                            >
+                              <legend className="sr-only">{step.prompt}</legend>
+                              {step.options.map((option, optionIndex) => {
+                                const optionId = `${currentInputId}-${option.value}`;
+                                const isSelected = stringArrayValue.includes(option.value);
+                                return (
+                                  <label
+                                    key={option.value}
+                                    htmlFor={optionId}
+                                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
+                                      isSelected
+                                        ? isAssessmentMode
+                                          ? 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
+                                          : 'border-emerald-300 bg-emerald-50 shadow-inner shadow-emerald-200/30'
+                                        : isAssessmentMode
+                                          ? 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
+                                          : 'border-slate-300 hover:border-emerald-300 hover:bg-emerald-50'
                                     }`}
-                                    ref={(element: HTMLInputElement | null) => {
-                                      if (optionIndex === 0) {
-                                        interactiveRefs.current[step.id] = element;
-                                      }
-                                    }}
-                                  />
-                                  <span className="text-slate-800">{option.label}</span>
+                                  >
+                                    <input
+                                      id={optionId}
+                                      type="checkbox"
+                                      name={`${step.id}-${option.value}`}
+                                      value={option.value}
+                                      checked={isSelected}
+                                      onChange={(event) => {
+                                        const updatedSelections = event.target.checked
+                                          ? [...stringArrayValue, option.value]
+                                          : stringArrayValue.filter((value) => value !== option.value);
+
+                                        handleFieldChange(
+                                          step.id,
+                                          updatedSelections as AssessmentFormData[typeof step.id]
+                                        );
+
+                                        if (
+                                          step.id === 'lookingFor' &&
+                                          !updatedSelections.includes('transition')
+                                        ) {
+                                          handleFieldChange('transitionTarget', '');
+                                        }
+                                      }}
+                                      className={`mt-1 focus:ring-2 ${
+                                        isAssessmentMode
+                                          ? 'text-emerald-500 focus:ring-emerald-200'
+                                          : 'text-emerald-500 focus:ring-emerald-200'
+                                      }`}
+                                      ref={(element: HTMLInputElement | null) => {
+                                        if (optionIndex === 0) {
+                                          interactiveRefs.current[step.id] = element;
+                                        }
+                                      }}
+                                    />
+                                    <span className="text-slate-800">{option.label}</span>
+                                  </label>
+                                );
+                              })}
+                            </fieldset>
+
+                            {step.id === 'lookingFor' && isTransitionSelected && (
+                              <div className="space-y-2">
+                                <label
+                                  htmlFor={`${currentInputId}-transition-target`}
+                                  className="block text-sm font-semibold text-slate-800"
+                                >
+                                  What role or discipline are you interested in transitioning into?
                                 </label>
-                              );
-                            })}
-                          </fieldset>
+                                <input
+                                  id={`${currentInputId}-transition-target`}
+                                  type="text"
+                                  value={formData.transitionTarget}
+                                  onChange={(event) =>
+                                    handleFieldChange(
+                                      'transitionTarget',
+                                      event.target.value as AssessmentFormData['transitionTarget']
+                                    )
+                                  }
+                                  className={`${commonInputClasses} max-w-xl`}
+                                  placeholder="e.g., product management, data science, UX design"
+                                  aria-describedby={currentHelperTextId}
+                                />
+                              </div>
+                            )}
+                          </div>
                         );
                       }
 
