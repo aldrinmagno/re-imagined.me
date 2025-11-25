@@ -612,6 +612,27 @@ function Home() {
                     <ArrowRight size={20} />
                   </span>
                 </button>
+                <div className="mt-4 w-full max-w-xl rounded-2xl border border-white/70 bg-white/70 p-4 text-left shadow-sm">
+                  <p className="text-sm font-semibold text-slate-800">You’ll get:</p>
+                  <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                    <li className="flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>3–5 realistic future roles based on your current job</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>A personalised 90-day action plan</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>Skills to build next, with hand-picked resources</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>A one-page summary you can use in job interviews</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
               <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-600">
                 Built for professionals who want their work to stay meaningful and relevant.
