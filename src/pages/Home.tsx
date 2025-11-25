@@ -1425,8 +1425,8 @@ function Home() {
                 snapshotInsights={snapshotInsights}
               />
 
-              <div className="absolute inset-0 flex justify-end">
-                <div className="flex h-full w-1/2 items-center justify-center bg-white/70 backdrop-blur-md">
+              <div className="absolute left-0 top-1/4 h-3/4 w-full overflow-hidden">
+                <div className="flex h-full w-full items-center justify-center bg-white/70 backdrop-blur-md">
                   <div className="flex flex-col items-center gap-3 text-center text-slate-800">
                     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Unlock everything</p>
                     <p className="max-w-xs text-base font-medium text-slate-700">
