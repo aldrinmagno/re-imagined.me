@@ -17,4 +17,21 @@ export interface SnapshotInsights {
   workEvolution: string;
   futureDirections: string;
   nextSteps: string;
+  futureRoles: {
+    title: string;
+    reasons: string[];
+  }[];
+  skillsByRole: {
+    role: string;
+    skills: string[];
+  }[];
+  actionPlan: {
+    phase: string;
+    items: string[];
+  }[];
+  learningResources: {
+    label: string;
+    href: string;
+  }[];
+  interviewTalkingPoints: string[];
 }

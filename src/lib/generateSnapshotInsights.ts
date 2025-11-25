@@ -6,11 +6,98 @@ interface SnapshotInput {
   industryLabels?: string[];
 }
 
+const fallbackFutureRoles: SnapshotInsights['futureRoles'] = [
+  {
+    title: 'AI-Augmented Program Manager',
+    reasons: [
+      'Blends your delivery discipline with lightweight automation.',
+      'Keeps you close to cross-functional teams without heavy coding.'
+    ]
+  },
+  {
+    title: 'Product Operations Lead',
+    reasons: [
+      'Translates product strategy into repeatable rituals.',
+      'Plays to your strength in coordinating people, processes, and data.'
+    ]
+  },
+  {
+    title: 'Customer Success Strategist',
+    reasons: [
+      'Uses your stakeholder empathy to shape retention and renewals.',
+      'Pairs well with your project background for structured improvements.'
+    ]
+  }
+];
+
+const fallbackSkillsByRole: SnapshotInsights['skillsByRole'] = [
+  {
+    role: 'AI-Augmented Program Manager',
+    skills: ['Workflow automation basics', 'Prompt design for internal tools', 'Risk and change communication']
+  },
+  {
+    role: 'Product Operations Lead',
+    skills: ['Metrics storytelling', 'Experiment ops', 'Lightweight process design']
+  },
+  {
+    role: 'Customer Success Strategist',
+    skills: ['Voice-of-customer analysis', 'Success playbooks', 'Executive-ready reporting']
+  }
+];
+
+const fallbackActionPlan: SnapshotInsights['actionPlan'] = [
+  {
+    phase: 'Month 1 — Map and measure',
+    items: [
+      'Audit your current projects for repeatable workflows you can automate.',
+      'Shadow a product manager to capture their weekly rituals and metrics.',
+      'Host two customer calls focused on goals, not features.'
+    ]
+  },
+  {
+    phase: 'Month 2 — Prototype and practice',
+    items: [
+      'Build a simple automation (e.g., status summaries) using AI-assisted tools.',
+      'Draft a lightweight product ops cadence for one team.',
+      'Create a success playbook outline based on the customer calls.'
+    ]
+  },
+  {
+    phase: 'Month 3 — Ship and socialize',
+    items: [
+      'Roll out the automation to your squad with clear guardrails.',
+      'Share a metrics snapshot and facilitation plan with product leadership.',
+      'Pilot the success playbook with two accounts and gather feedback.'
+    ]
+  }
+];
+
+const fallbackLearningResources: SnapshotInsights['learningResources'] = [
+  { label: 'Automation mini-course (no-code)', href: '#' },
+  { label: 'Product ops rituals template', href: '#' },
+  { label: 'Customer interview guide', href: '#' },
+  { label: 'Intro to prompt design for ops', href: '#' }
+];
+
+const fallbackInterviewTalkingPoints: SnapshotInsights['interviewTalkingPoints'] = [
+  'Link AI experimentation to measurable delivery wins.',
+  'Show how you translate ambiguity into weekly rituals and checkpoints.',
+  'Highlight your ability to calm stakeholders during change.',
+  'Emphasize curiosity about tools while keeping people at the center.',
+  'Share a story where you turned feedback into a repeatable playbook.'
+];
+
 const formatIndustries = (industries?: string[]) =>
   industries && industries.length > 0 ? industries.join(', ') : null;
 
 const formatStrengths = (strengths?: string[]) =>
   strengths && strengths.length > 0 ? strengths.join(', ') : null;
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+const sanitizeStringArray = (value: unknown): string[] =>
+  isStringArray(value) ? value.map((item) => item.trim()).filter(Boolean) : [];
 
 const normalizeLookingFor = (value: AssessmentFormData['lookingFor']) => {
   if (Array.isArray(value)) {
@@ -54,29 +141,138 @@ const createFallbackInsights = ({
     futureDirections:
       `Blend your strengths in ${strengthsText} with ${goalText} to explore adjacent roles that translate your domain knowledge into higher-leverage work.`,
     nextSteps:
-      'Focus your next 90 days on clarifying outcomes, upskilling in AI-enabled tooling, and piloting a project that showcases how you solve emerging problems.'
+      'Focus your next 90 days on clarifying outcomes, upskilling in AI-enabled tooling, and piloting a project that showcases how you solve emerging problems.',
+    futureRoles: fallbackFutureRoles,
+    skillsByRole: fallbackSkillsByRole,
+    actionPlan: fallbackActionPlan,
+    learningResources: fallbackLearningResources,
+    interviewTalkingPoints: fallbackInterviewTalkingPoints
   };
 };
 
-const parseInsightsFromContent = (content: string): SnapshotInsights | null => {
+const parseFutureRoles = (value: unknown): SnapshotInsights['futureRoles'] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') return null;
+      const title = typeof (entry as { title?: unknown }).title === 'string' ? entry.title.trim() : '';
+      const reasons = sanitizeStringArray((entry as { reasons?: unknown }).reasons);
+
+      if (!title || reasons.length === 0) return null;
+
+      return { title, reasons };
+    })
+    .filter(Boolean) as SnapshotInsights['futureRoles'];
+};
+
+const parseSkillsByRole = (value: unknown): SnapshotInsights['skillsByRole'] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') return null;
+      const role = typeof (entry as { role?: unknown }).role === 'string' ? entry.role.trim() : '';
+      const skills = sanitizeStringArray((entry as { skills?: unknown }).skills);
+
+      if (!role || skills.length === 0) return null;
+
+      return { role, skills };
+    })
+    .filter(Boolean) as SnapshotInsights['skillsByRole'];
+};
+
+const parseActionPlan = (value: unknown): SnapshotInsights['actionPlan'] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') return null;
+      const phase = typeof (entry as { phase?: unknown }).phase === 'string' ? entry.phase.trim() : '';
+      const items = sanitizeStringArray((entry as { items?: unknown }).items);
+
+      if (!phase || items.length === 0) return null;
+
+      return { phase, items };
+    })
+    .filter(Boolean) as SnapshotInsights['actionPlan'];
+};
+
+const parseLearningResources = (value: unknown): SnapshotInsights['learningResources'] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') return null;
+      const label = typeof (entry as { label?: unknown }).label === 'string' ? entry.label.trim() : '';
+      const href = typeof (entry as { href?: unknown }).href === 'string' ? entry.href.trim() : '';
+
+      if (!label) return null;
+
+      return { label, href: href || '#' };
+    })
+    .filter(Boolean) as SnapshotInsights['learningResources'];
+};
+
+const parseInsightsFromContent = (content: string, fallback: SnapshotInsights): SnapshotInsights | null => {
   if (!content) {
     return null;
   }
 
   try {
     const parsed = JSON.parse(content.trim());
-    if (
-      parsed &&
-      typeof parsed.workEvolution === 'string' &&
-      typeof parsed.futureDirections === 'string' &&
-      typeof parsed.nextSteps === 'string'
-    ) {
-      return {
-        workEvolution: parsed.workEvolution.trim(),
-        futureDirections: parsed.futureDirections.trim(),
-        nextSteps: parsed.nextSteps.trim()
-      };
+
+    if (!parsed || typeof parsed !== 'object') {
+      return null;
     }
+
+    const insights: Partial<SnapshotInsights> = {};
+
+    if (typeof (parsed as { workEvolution?: unknown }).workEvolution === 'string') {
+      insights.workEvolution = (parsed as { workEvolution: string }).workEvolution.trim();
+    }
+    if (typeof (parsed as { futureDirections?: unknown }).futureDirections === 'string') {
+      insights.futureDirections = (parsed as { futureDirections: string }).futureDirections.trim();
+    }
+    if (typeof (parsed as { nextSteps?: unknown }).nextSteps === 'string') {
+      insights.nextSteps = (parsed as { nextSteps: string }).nextSteps.trim();
+    }
+
+    const futureRoles = parseFutureRoles((parsed as { futureRoles?: unknown }).futureRoles);
+    if (futureRoles.length > 0) {
+      insights.futureRoles = futureRoles;
+    }
+
+    const skillsByRole = parseSkillsByRole((parsed as { skillsByRole?: unknown }).skillsByRole);
+    if (skillsByRole.length > 0) {
+      insights.skillsByRole = skillsByRole;
+    }
+
+    const actionPlan = parseActionPlan((parsed as { actionPlan?: unknown }).actionPlan);
+    if (actionPlan.length > 0) {
+      insights.actionPlan = actionPlan;
+    }
+
+    const learningResources = parseLearningResources((parsed as { learningResources?: unknown }).learningResources);
+    if (learningResources.length > 0) {
+      insights.learningResources = learningResources;
+    }
+
+    const interviewTalkingPoints = sanitizeStringArray(
+      (parsed as { interviewTalkingPoints?: unknown }).interviewTalkingPoints
+    );
+    if (interviewTalkingPoints.length > 0) {
+      insights.interviewTalkingPoints = interviewTalkingPoints;
+    }
+
+    if (Object.keys(insights).length === 0) {
+      return null;
+    }
+
+    return {
+      ...fallback,
+      ...insights
+    };
   } catch (error) {
     console.warn('Failed to parse snapshot insights JSON', error);
   }
@@ -87,10 +283,11 @@ const parseInsightsFromContent = (content: string): SnapshotInsights | null => {
 export const generateSnapshotInsights = async (input: SnapshotInput): Promise<SnapshotInsights> => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const structuredSignals = buildStructuredSignals(input);
+  const fallbackInsights = createFallbackInsights(input);
 
   if (!apiKey) {
     console.warn('Missing OpenAI API key; using fallback snapshot insights.');
-    return createFallbackInsights(input);
+    return fallbackInsights;
   }
 
   try {
@@ -107,7 +304,7 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
           {
             role: 'system',
             content:
-              'You are a concise career strategist. Return JSON only with keys workEvolution, futureDirections, nextSteps. Each value must be no more than 60 words.'
+              'You are a concise career strategist. Return JSON only with keys workEvolution, futureDirections, nextSteps, futureRoles, skillsByRole, actionPlan, learningResources, interviewTalkingPoints. Keep workEvolution, futureDirections, and nextSteps under 60 words each. For futureRoles provide 3 objects with title and 2 short reasons. skillsByRole should map to each role with 3 skills. actionPlan should include 3 phases with 3 bullet items each. Provide 4 learningResources with label and href, and 5 interviewTalkingPoints as concise bullet strings.'
           },
           {
             role: 'user',
@@ -137,15 +334,15 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
 
     const data = await response.json();
     const aiContent = data?.choices?.[0]?.message?.content;
-    const parsed = parseInsightsFromContent(aiContent);
+    const parsed = parseInsightsFromContent(aiContent, fallbackInsights);
 
     if (parsed) {
       return parsed;
     }
 
-    return createFallbackInsights(input);
+    return fallbackInsights;
   } catch (error) {
     console.error('Error generating snapshot insights', error);
-    return createFallbackInsights(input);
+    return fallbackInsights;
   }
 };

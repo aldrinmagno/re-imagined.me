@@ -124,6 +124,12 @@ const AssessmentPreviewPanel = ({
     snapshotInsights?.nextSteps ||
     `Focus the next 90 days on experiments that show how you deliver value as ${formData.jobTitle || 'your role'} evolves.`;
 
+  const futureRolesData = snapshotInsights?.futureRoles || futureRoles;
+  const skillsByRoleData = snapshotInsights?.skillsByRole || skillsByRole;
+  const actionPlanData = snapshotInsights?.actionPlan || actionPlan;
+  const learningResourcesData = snapshotInsights?.learningResources || learningResources;
+  const interviewTalkingPointsData = snapshotInsights?.interviewTalkingPoints || interviewTalkingPoints;
+
   const showPersonalizedData = Boolean(snapshotInsights) || mode === 'live';
 
   return (
@@ -155,7 +161,7 @@ const AssessmentPreviewPanel = ({
           </div>
           <p className="mt-2 text-sm text-slate-600">{futureDirectionsCopy}</p>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {futureRoles.map((role) => (
+            {futureRolesData.map((role) => (
               <div key={role.title} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
                 <h5 className="text-base font-semibold text-slate-900">{role.title}</h5>
                 <ul className="mt-2 space-y-2 text-sm text-slate-600">
@@ -174,7 +180,7 @@ const AssessmentPreviewPanel = ({
         <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
           <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Skills to build next</h4>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {skillsByRole.map((group) => (
+            {skillsByRoleData.map((group) => (
               <div key={group.role} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
                 <h5 className="text-sm font-semibold text-slate-900">{group.role}</h5>
                 <ul className="mt-2 space-y-1 text-sm text-slate-600">
@@ -194,7 +200,7 @@ const AssessmentPreviewPanel = ({
           <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">90-day action plan</h4>
           <p className="mt-2 text-sm text-slate-600">{nextStepsCopy}</p>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {actionPlan.map((phase) => (
+            {actionPlanData.map((phase) => (
               <div key={phase.phase} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
                 <h5 className="text-sm font-semibold text-slate-900">{phase.phase}</h5>
                 <ul className="mt-2 space-y-2 text-sm text-slate-600">
@@ -216,7 +222,7 @@ const AssessmentPreviewPanel = ({
             <span className="text-xs text-slate-500">Curated to keep momentum</span>
           </div>
           <ul className="mt-3 grid gap-2 md:grid-cols-2">
-            {learningResources.map((resource) => (
+            {learningResourcesData.map((resource) => (
               <li key={resource.label} className="flex items-center justify-between rounded-lg bg-slate-50/80 px-3 py-2 text-sm text-slate-700 ring-1 ring-slate-100">
                 <span>{resource.label}</span>
                 <Link to={resource.href} className="text-emerald-600 hover:text-emerald-700">
@@ -230,7 +236,7 @@ const AssessmentPreviewPanel = ({
         <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
           <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">How to talk about yourself in interviews</h4>
           <ul className="mt-3 space-y-2 text-sm text-slate-700">
-            {interviewTalkingPoints.map((point) => (
+            {interviewTalkingPointsData.map((point) => (
               <li key={point} className="flex gap-2">
                 <span aria-hidden className="mt-[6px] h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 <span>{point}</span>
