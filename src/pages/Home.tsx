@@ -601,23 +601,17 @@ function Home() {
               <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-700 sm:text-xl">
                 Capture who you are today, how you work, and where you want to go next as technology reshapes your industry.
               </p>
-              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="mt-10 flex flex-col items-center justify-center">
                 <button
+                  type="button"
                   onClick={startAssessment}
-                  className="w-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 px-10 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-300/30 transition hover:shadow-xl hover:shadow-emerald-200/40 sm:w-auto"
+                  className="w-full max-w-md rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-500 px-12 py-4 text-lg font-semibold text-white shadow-lg shadow-emerald-300/40 transition hover:shadow-xl hover:shadow-emerald-200/50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 sm:text-xl"
                 >
-                  <span className="inline-flex items-center justify-center gap-2 text-xl">
-                    Start your assessment
+                  <span className="inline-flex items-center justify-center gap-2">
+                    Start my 5-minute assessment
                     <ArrowRight size={20} />
                   </span>
                 </button>
-                <a
-                  href="#how-it-works"
-                  className="group inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 transition hover:text-emerald-500"
-                >
-                  How does this work?
-                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-                </a>
               </div>
               <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-600">
                 Built for professionals who want their work to stay meaningful and relevant.
