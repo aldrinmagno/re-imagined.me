@@ -1427,17 +1427,21 @@ function Home() {
 
               <div className="absolute left-0 top-1/4 h-3/4 w-full overflow-hidden">
                 <div className="flex h-full w-full justify-center backdrop-blur-md">
-                  <div className="flex flex-col items-center gap-3 text-center text-slate-800 mt-8">
-                    <div className='rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70'>
-                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Unlock everything</p>
-                      <p className="max-w-xs text-base font-medium text-slate-700">
-                        Log in to see your full snapshot, 90-day plan, and the skills tailored to you.
+                  <div className="flex flex-col items-center gap-4 text-center text-slate-800 mt-10">
+                    <div className="max-w-md rounded-3xl bg-white/95 p-6 sm:p-8 shadow-2xl shadow-emerald-200/50 ring-2 ring-emerald-100">
+                      <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                        Unlock everything
+                      </p>
+                      <h3 className="text-xl font-semibold text-slate-900">Save your progress & reveal your full plan</h3>
+                      <p className="mt-2 text-base text-slate-700">
+                        Log in to see the full snapshot, 90-day action plan, and the skills tailored to you.
                       </p>
                       <Link
                         to="/login"
-                        className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-200/60 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                        className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-400 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/70 transition hover:translate-y-[-1px] hover:shadow-emerald-200/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
                       >
-                        Log in to unlock
+                        Log in to unlock everything
+                        <span aria-hidden="true">→</span>
                       </Link>
                     </div>
                   </div>
