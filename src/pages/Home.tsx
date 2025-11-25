@@ -1416,13 +1416,32 @@ function Home() {
         <section id="snapshot" className="relative bg-slate-100 px-4 py-24 sm:px-6 lg:px-8">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.12),_transparent_60%)]" />
           <div className="mx-auto max-w-4xl">
-            <AssessmentPreviewPanel
-              formData={{ ...formData, strengths: strengthsWithOther }}
-              goalText={goalText}
-              industryLabel={industryLabel}
-              mode="full"
-              snapshotInsights={snapshotInsights}
-            />
+            <div className="relative overflow-hidden rounded-3xl">
+              <AssessmentPreviewPanel
+                formData={{ ...formData, strengths: strengthsWithOther }}
+                goalText={goalText}
+                industryLabel={industryLabel}
+                mode="full"
+                snapshotInsights={snapshotInsights}
+              />
+
+              <div className="absolute inset-0 flex justify-end">
+                <div className="flex h-full w-1/2 items-center justify-center bg-white/70 backdrop-blur-md">
+                  <div className="flex flex-col items-center gap-3 text-center text-slate-800">
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Unlock everything</p>
+                    <p className="max-w-xs text-base font-medium text-slate-700">
+                      Log in to see your full snapshot, 90-day plan, and the skills tailored to you.
+                    </p>
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-200/60 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                    >
+                      Log in to unlock
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       )}
