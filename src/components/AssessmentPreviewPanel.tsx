@@ -90,6 +90,9 @@ const interviewTalkingPoints = [
   'Share a story where you turned feedback into a repeatable playbook.'
 ];
 
+const formatList = (items?: string[]) =>
+  items && items.length > 0 ? items.filter(Boolean).join(', ') : undefined;
+
 const AssessmentPreviewPanel = ({
   formData,
   goalText,
@@ -97,12 +100,31 @@ const AssessmentPreviewPanel = ({
   mode,
   snapshotInsights
 }: AssessmentPreviewPanelProps) => {
-  // Props are accepted for compatibility with the wider assessment flow while this preview uses static content.
-  void formData;
-  void goalText;
-  void industryLabel;
-  void mode;
-  void snapshotInsights;
+  const industriesText = industryLabel || formatList(formData.industry);
+  const strengthsText = formatList(formData.strengths);
+
+  const currentStateCopy =
+    snapshotInsights?.workEvolution ||
+    [
+      `${formData.fullName || 'You'}${formData.jobTitle ? ` — ${formData.jobTitle}` : ''}${
+        industriesText ? ` in ${industriesText}` : ''
+      }.`,
+      goalText ? `You want to ${goalText}.` : null,
+      strengthsText ? `Key strengths: ${strengthsText}.` : null,
+      formData.workPreferences ? `Work preferences: ${formData.workPreferences}.` : null
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+  const futureDirectionsCopy =
+    snapshotInsights?.futureDirections ||
+    `Use ${strengthsText || 'your strengths'} to ${goalText || 'stay relevant as your industry evolves'}.`;
+
+  const nextStepsCopy =
+    snapshotInsights?.nextSteps ||
+    `Focus the next 90 days on experiments that show how you deliver value as ${formData.jobTitle || 'your role'} evolves.`;
+
+  const showPersonalizedData = Boolean(snapshotInsights) || mode === 'live';
 
   return (
     <aside className="rounded-3xl border border-transparent bg-white/50 p-6 shadow-none ring-1 ring-slate-200/60 backdrop-blur-sm lg:p-8">
@@ -113,7 +135,9 @@ const AssessmentPreviewPanel = ({
           </p>
           <h3 className="mt-2 text-xl font-semibold text-slate-900">See the structure of your personalised report</h3>
           <p className="mt-1 text-sm text-slate-600">
-            This is a sample of what you&apos;ll receive after the 5-minute assessment.
+            {showPersonalizedData
+              ? 'Personalised with your answers and AI-generated insights.'
+              : "This is a sample of what you'll receive after the 5-minute assessment."}
           </p>
         </div>
         <Link
@@ -127,10 +151,7 @@ const AssessmentPreviewPanel = ({
       <div className="mt-8 space-y-6">
         <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
           <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Where you are now</h4>
-          <p className="mt-2 text-base leading-relaxed text-slate-700">
-            Sam — Mid-level project manager worried about AI impact. Loves cross-functional work, keeps teams calm during change, and
-            wants to stay relevant as automation grows.
-          </p>
+          <p className="mt-2 text-base leading-relaxed text-slate-700">{currentStateCopy}</p>
         </section>
 
         <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
@@ -138,6 +159,7 @@ const AssessmentPreviewPanel = ({
             <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Future roles you could grow into</h4>
             <span className="text-xs font-medium text-emerald-600">3 options</span>
           </div>
+          <p className="mt-2 text-sm text-slate-600">{futureDirectionsCopy}</p>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {futureRoles.map((role) => (
               <div key={role.title} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
@@ -176,6 +198,7 @@ const AssessmentPreviewPanel = ({
 
         <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
           <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">90-day action plan</h4>
+          <p className="mt-2 text-sm text-slate-600">{nextStepsCopy}</p>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {actionPlan.map((phase) => (
               <div key={phase.phase} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
