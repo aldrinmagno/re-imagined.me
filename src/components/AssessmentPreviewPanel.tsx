@@ -1,33 +1,97 @@
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 import { Link } from 'react-router-dom';
 
-type PreviewMode = 'live' | 'full';
-
 interface AssessmentPreviewPanelProps {
   formData: AssessmentFormData;
   goalText: string;
   industryLabel?: string;
-  mode: PreviewMode;
+  mode: 'live' | 'full';
   snapshotInsights?: SnapshotInsights | null;
 }
 
-const placeholder = (text: string) => (
-  <span className="italic text-slate-300">{text}</span>
-);
-
-const truncateCopy = (value: string, length = 140) => {
-  if (!value) {
-    return '';
+const futureRoles = [
+  {
+    title: 'AI-Augmented Program Manager',
+    reasons: [
+      'Blends your delivery discipline with lightweight automation.',
+      'Keeps you close to cross-functional teams without heavy coding.'
+    ]
+  },
+  {
+    title: 'Product Operations Lead',
+    reasons: [
+      'Translates product strategy into repeatable rituals.',
+      'Plays to your strength in coordinating people, processes, and data.'
+    ]
+  },
+  {
+    title: 'Customer Success Strategist',
+    reasons: [
+      'Uses your stakeholder empathy to shape retention and renewals.',
+      'Pairs well with your project background for structured improvements.'
+    ]
   }
+];
 
-  if (value.length <= length) {
-    return value;
+const skillsByRole = [
+  {
+    role: 'AI-Augmented Program Manager',
+    skills: ['Workflow automation basics', 'Prompt design for internal tools', 'Risk and change communication']
+  },
+  {
+    role: 'Product Operations Lead',
+    skills: ['Metrics storytelling', 'Experiment ops', 'Lightweight process design']
+  },
+  {
+    role: 'Customer Success Strategist',
+    skills: ['Voice-of-customer analysis', 'Success playbooks', 'Executive-ready reporting']
   }
+];
 
-  return `${value.slice(0, length).trim()}…`;
-};
+const actionPlan = [
+  {
+    phase: 'Month 1 — Map and measure',
+    items: [
+      'Audit your current projects for repeatable workflows you can automate.',
+      'Shadow a product manager to capture their weekly rituals and metrics.',
+      'Host two customer calls focused on goals, not features.'
+    ]
+  },
+  {
+    phase: 'Month 2 — Prototype and practice',
+    items: [
+      'Build a simple automation (e.g., status summaries) using AI-assisted tools.',
+      'Draft a lightweight product ops cadence for one team.',
+      'Create a success playbook outline based on the customer calls.'
+    ]
+  },
+  {
+    phase: 'Month 3 — Ship and socialize',
+    items: [
+      'Roll out the automation to your squad with clear guardrails.',
+      'Share a metrics snapshot and facilitation plan with product leadership.',
+      'Pilot the success playbook with two accounts and gather feedback.'
+    ]
+  }
+];
 
-const formatStrengths = (strengths: string[]) => strengths.join(', ');
+const learningResources = [
+  { label: 'Automation mini-course (no-code)', href: '#' },
+  { label: 'Product ops rituals template', href: '#' },
+  { label: 'Customer interview guide', href: '#' },
+  { label: 'Intro to prompt design for ops', href: '#' }
+];
+
+const interviewTalkingPoints = [
+  'Link AI experimentation to measurable delivery wins.',
+  'Show how you translate ambiguity into weekly rituals and checkpoints.',
+  'Highlight your ability to calm stakeholders during change.',
+  'Emphasize curiosity about tools while keeping people at the center.',
+  'Share a story where you turned feedback into a repeatable playbook.'
+];
+
+const formatList = (items?: string[]) =>
+  items && items.length > 0 ? items.filter(Boolean).join(', ') : undefined;
 
 const AssessmentPreviewPanel = ({
   formData,
@@ -36,168 +100,150 @@ const AssessmentPreviewPanel = ({
   mode,
   snapshotInsights
 }: AssessmentPreviewPanelProps) => {
-  const hasLookingFor = Array.isArray(formData.lookingFor)
-    ? formData.lookingFor.length > 0
-    : Boolean(formData.lookingFor);
+  const industriesText = industryLabel || formatList(formData.industry);
+  const strengthsText = formatList(formData.strengths);
 
-  const detailItems = [
-    {
-      label: 'Current role',
-      value: formData.jobTitle,
-      placeholder: 'Add your current job title'
-    },
-    {
-      label: 'Industries',
-      value: industryLabel ?? '',
-      placeholder: 'Choose your industries'
-    },
-    {
-      label: 'Experience',
-      value: formData.yearsExperience
-        ? `${formData.yearsExperience} year${formData.yearsExperience === '1' ? '' : 's'}`
-        : '',
-      placeholder: 'How many years of experience?'
-    },
-    {
-      label: 'Primary focus',
-      value: hasLookingFor ? goalText : '',
-      placeholder: 'Select what you are looking for next'
-    }
-  ];
+  const currentStateCopy =
+    snapshotInsights?.workEvolution ||
+    [
+      `${formData.fullName || 'You'}${formData.jobTitle ? ` — ${formData.jobTitle}` : ''}${
+        industriesText ? ` in ${industriesText}` : ''
+      }.`,
+      goalText ? `You want to ${goalText}.` : null,
+      strengthsText ? `Key strengths: ${strengthsText}.` : null,
+      formData.workPreferences ? `Work preferences: ${formData.workPreferences}.` : null
+    ]
+      .filter(Boolean)
+      .join(' ');
 
-  const liveSections = [
-    {
-      title: 'Strengths we can build on',
-      value: truncateCopy(formatStrengths(formData.strengths)),
-      placeholder:
-        'Share the skills, capabilities, or superpowers you rely on most.'
-    },
-    {
-      title: 'Shape of a typical week',
-      value: truncateCopy(formData.typicalWeek),
-      placeholder:
-        'Tell us about the rhythms of your role—projects, rituals, and responsibilities.'
-    },
-    {
-      title: 'Working preferences',
-      value: truncateCopy(formData.workPreferences),
-      placeholder:
-        'Let us know what you want more (or less) of in the next chapter.'
-    }
-  ];
+  const futureDirectionsCopy =
+    snapshotInsights?.futureDirections ||
+    `Use ${strengthsText || 'your strengths'} to ${goalText || 'stay relevant as your industry evolves'}.`;
+
+  const nextStepsCopy =
+    snapshotInsights?.nextSteps ||
+    `Focus the next 90 days on experiments that show how you deliver value as ${formData.jobTitle || 'your role'} evolves.`;
+
+  const showPersonalizedData = Boolean(snapshotInsights) || mode === 'live';
 
   return (
-    <aside
-      className={`rounded-3xl border border-transparent bg-white/40 p-5 shadow-none ring-1 ring-slate-200/40 backdrop-blur-sm ${
-        mode === 'full' ? 'lg:p-9' : 'lg:p-7'
-      }`}
-    >
-      <div className="space-y-8">
-        <header>
-          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-slate-400">
-            {mode === 'full' ? 'Your personalised snapshot' : 'Live assessment preview'}
+    <aside className="rounded-3xl border border-transparent bg-white/50 p-6 shadow-none ring-1 ring-slate-200/60 backdrop-blur-sm lg:p-8">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Preview assessment report
           </p>
-          <h3 className="mt-2 text-lg font-semibold text-slate-800 sm:text-xl">
-            {mode === 'full'
-              ? 'Initial snapshot of your next chapter'
-              : 'See your snapshot take shape'}
-          </h3>
-          <p className="mt-2 text-sm text-slate-500 sm:text-sm">
-            {mode === 'full'
-              ? "You're currently a "
-              : 'As you fill in each prompt, we stitch together the key signals that will inform your roadmap.'}
-            {mode === 'full' && (
-              <>
-                <span className="font-medium text-slate-700"> {formData.jobTitle || '—'} </span>
-                {industryLabel && (
-                  <>
-                    in
-                    <span className="font-medium text-slate-700"> {industryLabel}</span>
-                  </>
-                )}
-                , focusing on
-                <span className="font-medium text-slate-700"> {goalText}</span>.
-              </>
-            )}
+          <h3 className="mt-2 text-xl font-semibold text-slate-900">See the structure of your personalised report</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            {showPersonalizedData
+              ? 'Personalised with your answers and AI-generated insights.'
+              : "This is a sample of what you'll receive after the 5-minute assessment."}
           </p>
-        </header>
+        </div>
+        <Link
+          to="/sample-report"
+          className="hidden shrink-0 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 lg:inline-flex"
+        >
+          View a sample report
+        </Link>
+      </div>
 
-        <dl className="grid gap-4 rounded-2xl border border-transparent bg-white/30 p-4 text-sm text-slate-500 ring-1 ring-slate-200/30">
-          {detailItems.map((item) => (
-            <div key={item.label} className="flex flex-col gap-1">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                {item.label}
-              </dt>
-              <dd className="text-base text-slate-700">
-                {item.value ? <span className="font-medium text-slate-700">{item.value}</span> : placeholder(item.placeholder)}
-              </dd>
-            </div>
-          ))}
-        </dl>
+      <div className="mt-8 space-y-6">
+        <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
+          <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Where you are now</h4>
+          <p className="mt-2 text-base leading-relaxed text-slate-700">{currentStateCopy}</p>
+        </section>
 
-        {mode === 'live' ? (
-          <div className="space-y-4">
-            {liveSections.map((section) => (
-              <div
-                key={section.title}
-                className="rounded-2xl border border-transparent bg-white/30 p-4 text-slate-500 ring-1 ring-slate-200/25"
-              >
-                <h4 className="text-sm font-semibold text-slate-600">{section.title}</h4>
-                <p className="mt-2 text-sm text-slate-500">
-                  {section.value ? section.value : placeholder(section.placeholder)}
-                </p>
+        <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Future roles you could grow into</h4>
+            <span className="text-xs font-medium text-emerald-600">3 options</span>
+          </div>
+          <p className="mt-2 text-sm text-slate-600">{futureDirectionsCopy}</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {futureRoles.map((role) => (
+              <div key={role.title} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                <h5 className="text-base font-semibold text-slate-900">{role.title}</h5>
+                <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                  {role.reasons.map((reason) => (
+                    <li key={reason} className="flex gap-2">
+                      <span aria-hidden className="mt-[6px] h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span>{reason}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="space-y-8">
-            <div className="grid gap-6 md:grid-cols-3">
-              {[{
-                title: 'How your work may evolve',
-                value: snapshotInsights?.workEvolution
-              },
-              {
-                title: 'Potential future directions',
-                value: snapshotInsights?.futureDirections
-              },
-              {
-                title: 'Structured next steps',
-                value: snapshotInsights?.nextSteps
-              }].map((section) => (
-                <div
-                  key={section.title}
-                  className="rounded-2xl border border-transparent bg-white/35 p-6 text-slate-600 ring-1 ring-slate-200/30"
-                >
-                  <h4 className="mb-3 text-base font-semibold text-slate-700">{section.title}</h4>
-                  <p className="text-sm leading-relaxed">
-                    {section.value ||
-                      'Your personalised AI snapshot will appear here once your answers are saved.'}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="rounded-2xl border border-transparent bg-white/25 p-5 text-center text-slate-500 ring-1 ring-slate-200/25">
-            <div className="flex flex-col items-center justify-center sm:flex-row">
-                {(
-                  <Link
-                    to="/login"
-                    className="w-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 px-10 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-300/30 transition hover:shadow-xl hover:shadow-emerald-200/40 sm:w-auto"
-                  >
-                    Login to your road map!
-                 </Link>
-                 )}
-                
-              </div>
+        </section>
 
-            </div>
-            <div className="rounded-2xl border border-transparent bg-white/25 p-5 text-center text-slate-500 ring-1 ring-slate-200/25">
-            
-              <p className="text-sm">
-                These insights are generated automatically based on your responses and will evolve as we collect more signals.
-              </p>
-            </div>
+        <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
+          <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Skills to build next</h4>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {skillsByRole.map((group) => (
+              <div key={group.role} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                <h5 className="text-sm font-semibold text-slate-900">{group.role}</h5>
+                <ul className="mt-2 space-y-1 text-sm text-slate-600">
+                  {group.skills.map((skill) => (
+                    <li key={skill} className="flex gap-2">
+                      <span aria-hidden className="mt-[6px] h-1 w-3 rounded-full bg-emerald-500" />
+                      <span>{skill}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        )}
+        </section>
+
+        <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
+          <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">90-day action plan</h4>
+          <p className="mt-2 text-sm text-slate-600">{nextStepsCopy}</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {actionPlan.map((phase) => (
+              <div key={phase.phase} className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                <h5 className="text-sm font-semibold text-slate-900">{phase.phase}</h5>
+                <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                  {phase.items.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span aria-hidden className="mt-[6px] h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Learning resources</h4>
+            <span className="text-xs text-slate-500">Curated to keep momentum</span>
+          </div>
+          <ul className="mt-3 grid gap-2 md:grid-cols-2">
+            {learningResources.map((resource) => (
+              <li key={resource.label} className="flex items-center justify-between rounded-lg bg-slate-50/80 px-3 py-2 text-sm text-slate-700 ring-1 ring-slate-100">
+                <span>{resource.label}</span>
+                <Link to={resource.href} className="text-emerald-600 hover:text-emerald-700">
+                  Open
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70">
+          <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">How to talk about yourself in interviews</h4>
+          <ul className="mt-3 space-y-2 text-sm text-slate-700">
+            {interviewTalkingPoints.map((point) => (
+              <li key={point} className="flex gap-2">
+                <span aria-hidden className="mt-[6px] h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </aside>
   );
