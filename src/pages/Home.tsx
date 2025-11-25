@@ -1,6 +1,6 @@
 import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, TrendingUp, Map, X } from 'lucide-react';
+import { ArrowRight, ClipboardList, Flag, Sparkles, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
 import { generateSnapshotInsights } from '../lib/generateSnapshotInsights';
@@ -625,43 +625,55 @@ function Home() {
         <section id="how-it-works" className="relative bg-white/80 px-4 py-24 sm:px-6 lg:px-8">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.08),_transparent_60%)]" />
           <div className="mx-auto max-w-6xl">
-            <h2 className="text-center text-3xl font-bold text-slate-900 sm:text-4xl">
-              How re-imagined.me supports your next step
-            </h2>
-            <div className="mt-12 grid gap-8 md:grid-cols-3">
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                  <CheckCircle size={24} />
+            <div className="text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                How it works
+              </p>
+              <h2 className="mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
+                Three simple steps to your personalised roadmap
+              </h2>
+              <p className="mt-3 text-base text-slate-700">
+                Designed to be calm, clear, and easy to complete.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-emerald-200/15 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                  <ClipboardList size={24} aria-hidden="true" />
                 </div>
-                <h3 className="mt-6 text-xl font-semibold text-slate-900">
-                  Clarify your current position
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">Step 1</p>
+                <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                  Answer a short assessment (about 5–10 minutes).
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-700">
-                  We map your role, skills, and day-to-day responsibilities.
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                  Quick, focused questions about your role, strengths, and goals.
                 </p>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
-                  <TrendingUp size={24} />
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-emerald-200/15 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
+                  <Sparkles size={24} aria-hidden="true" />
                 </div>
-                <h3 className="mt-6 text-xl font-semibold text-slate-900">
-                  Explore future-aligned paths
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.15em] text-sky-700">Step 2</p>
+                <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                  We analyse your current role and skills.
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-700">
-                  We highlight roles and emerging opportunities that fit your strengths and ambitions.
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                  Our system connects the dots between what you do now and where you want to grow.
                 </p>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-8 shadow-lg shadow-emerald-200/10 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
-                  <Map size={24} />
+              <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-emerald-200/15 transition hover:-translate-y-1 hover:border-emerald-200/60 hover:shadow-emerald-200/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
+                  <Flag size={24} aria-hidden="true" />
                 </div>
-                <h3 className="mt-6 text-xl font-semibold text-slate-900">
-                  Define your next steps
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.15em] text-indigo-700">Step 3</p>
+                <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                  You get 3–5 future roles and a personalized 90-day action plan.
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-700">
-                  We outline a structured 90-day plan to move toward your next chapter.
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                  Receive clear options, next steps, and progress-friendly tasks.
                 </p>
               </div>
             </div>
