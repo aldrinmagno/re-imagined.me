@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Logout from './pages/Logout';
+import SampleReport from './pages/SampleReport';
 import PortalHome from './pages/portal/PortalHome';
 import Roadmap from './pages/portal/Roadmap';
 import Journal from './pages/portal/Journal';
@@ -27,6 +28,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/sample-report" element={<SampleReport />} />
         </Route>
 
         <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
