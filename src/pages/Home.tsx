@@ -1426,18 +1426,20 @@ function Home() {
               />
 
               <div className="absolute left-0 top-1/4 h-3/4 w-full overflow-hidden">
-                <div className="flex h-full w-full items-center justify-center bg-white/70 backdrop-blur-md">
-                  <div className="flex flex-col items-center gap-3 text-center text-slate-800">
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Unlock everything</p>
-                    <p className="max-w-xs text-base font-medium text-slate-700">
-                      Log in to see your full snapshot, 90-day plan, and the skills tailored to you.
-                    </p>
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-200/60 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
-                    >
-                      Log in to unlock
-                    </Link>
+                <div className="flex h-full w-full justify-center backdrop-blur-md">
+                  <div className="flex flex-col items-center gap-3 text-center text-slate-800 mt-8">
+                    <div className='rounded-2xl bg-white/80 p-5 ring-1 ring-slate-200/70'>
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Unlock everything</p>
+                      <p className="max-w-xs text-base font-medium text-slate-700">
+                        Log in to see your full snapshot, 90-day plan, and the skills tailored to you.
+                      </p>
+                      <Link
+                        to="/login"
+                        className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-200/60 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                      >
+                        Log in to unlock
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
