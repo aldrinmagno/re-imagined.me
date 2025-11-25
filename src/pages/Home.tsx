@@ -612,6 +612,12 @@ function Home() {
                     <ArrowRight size={20} />
                   </span>
                 </button>
+                <Link
+                  to="/sample-report"
+                  className="mt-4 text-sm font-semibold text-emerald-700 underline decoration-emerald-300/70 transition hover:text-emerald-600"
+                >
+                  View a sample report
+                </Link>
               </div>
               <p className="mt-10 text-sm uppercase tracking-[0.3em] text-slate-600">
                 Built for professionals who want their work to stay meaningful and relevant.
@@ -635,6 +641,14 @@ function Home() {
               <p className="mt-3 text-base text-slate-700">
                 Designed to be calm, clear, and easy to complete.
               </p>
+              <div className="mt-4 flex items-center justify-center">
+                <Link
+                  to="/sample-report"
+                  className="text-sm font-semibold text-emerald-700 underline decoration-emerald-300/70 transition hover:text-emerald-600"
+                >
+                  View a sample report
+                </Link>
+              </div>
             </div>
 
             <div className="mt-12 grid gap-6 md:grid-cols-3">
