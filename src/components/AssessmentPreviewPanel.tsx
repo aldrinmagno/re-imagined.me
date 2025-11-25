@@ -140,12 +140,6 @@ const AssessmentPreviewPanel = ({
               : "This is a sample of what you'll receive after the 5-minute assessment."}
           </p>
         </div>
-        <Link
-          to="/sample-report"
-          className="hidden shrink-0 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 lg:inline-flex"
-        >
-          View a sample report
-        </Link>
       </div>
 
       <div className="mt-8 space-y-6">

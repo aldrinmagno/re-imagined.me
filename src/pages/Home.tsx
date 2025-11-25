@@ -705,7 +705,7 @@ function Home() {
         <div
           className={`${
             isAssessmentMode
-              ? 'relative mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start'
+              ? 'relative mx-auto grid w-full max-w-6xl gap-8  lg:items-start'
               : 'relative mx-auto max-w-3xl'
           }`}
         >
@@ -1395,18 +1395,6 @@ function Home() {
             </div>
             </form>
           </div>
-
-          {isAssessmentMode && (
-            <div className="order-2 mt-8 w-full self-start lg:order-2 lg:mt-0 lg:sticky lg:top-24 lg:max-w-sm lg:justify-self-end">
-              <AssessmentPreviewPanel
-                formData={{ ...formData, strengths: strengthsWithOther }}
-                goalText={goalText}
-                industryLabel={industryLabel}
-                mode="live"
-                snapshotInsights={snapshotInsights}
-              />
-            </div>
-          )}
         </div>
       </section>
 
