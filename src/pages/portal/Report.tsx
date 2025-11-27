@@ -77,6 +77,12 @@ type FutureRole = {
   reasons: string[];
 };
 
+type RoleSkill = {
+  role: string;
+  summary: string;
+  skills: string[];
+};
+
 const sampleFutureRoles: FutureRole[] = [
   {
     title: 'AI-Augmented Project Manager',
@@ -101,6 +107,39 @@ const sampleFutureRoles: FutureRole[] = [
   }
 ];
 
+const roleSkillGroups: RoleSkill[] = [
+  {
+    role: 'AI-Augmented Project Manager',
+    summary: 'Pair delivery leadership with automation and clear communication.',
+    skills: [
+      'Adaptive planning with AI copilots',
+      'Workflow automation fundamentals',
+      'Risk and dependency mapping',
+      'Stakeholder storytelling'
+    ]
+  },
+  {
+    role: 'Customer Insights Analyst',
+    summary: 'Translate raw signals into decisions that teams can act on quickly.',
+    skills: [
+      'Basic SQL and lightweight data cleaning',
+      'Survey design and synthesis',
+      'Data storytelling with clear visuals',
+      'Experiment design for product questions'
+    ]
+  },
+  {
+    role: 'Product Operations Specialist',
+    summary: 'Keep teams unblocked with crisp rituals, documentation, and metrics.',
+    skills: [
+      'Notion/Confluence playbook design',
+      'Process mapping and iteration',
+      'Release readiness checklists',
+      'Team health and feedback loops'
+    ]
+  }
+];
+
 const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -114,6 +153,24 @@ const FutureRoleCard = ({ title, reasons }: FutureRole) => (
         <li key={reason} className="flex gap-2">
           <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
           <span>{reason}</span>
+        </li>
+      ))}
+    </ul>
+  </article>
+);
+
+const RoleSkillsCard = ({ role, summary, skills }: RoleSkill) => (
+  <article className="flex h-full flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
+    <div className="space-y-1">
+      <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Skills to build</p>
+      <h3 className="text-base font-semibold text-white">{role}</h3>
+      <p className="text-sm text-slate-300">{summary}</p>
+    </div>
+    <ul className="space-y-2 text-sm text-slate-200">
+      {skills.map((skill) => (
+        <li key={skill} className="flex gap-2 rounded-lg border border-slate-800/70 bg-slate-900/80 px-3 py-2">
+          <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
+          <span>{skill}</span>
         </li>
       ))}
     </ul>
@@ -279,12 +336,22 @@ function Report() {
         </div>
       </section>
 
-      <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200 lg:grid-cols-2">
+      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Skills to build next</p>
-          <p className="text-base font-semibold text-white">Tailored skill map on the way</p>
-          <p className="text-sm text-slate-300">Skills, resources, and lightweight practice projects will appear here.</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Skills to build next</p>
+          <h2 className="text-lg font-semibold text-white">Focused skill paths by role</h2>
+          <p className="text-sm text-slate-300">
+            Each role highlights specific, practice-ready skills so you know exactly what to work on first.
+          </p>
         </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {roleSkillGroups.map((roleSkills) => (
+            <RoleSkillsCard key={roleSkills.role} {...roleSkills} />
+          ))}
+        </div>
+      </section>
+      
+      <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200 lg:grid-cols-2">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.12em] text-slate-400">90-day action plan</p>
           <p className="text-base font-semibold text-white">Checklists and milestones coming soon</p>
