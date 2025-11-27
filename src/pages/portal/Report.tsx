@@ -212,14 +212,6 @@ function Report() {
             ) : null}
           </div>
         </section>
-
-        <AssessmentPreviewPanel
-          formData={assessment}
-          goalText={goalText}
-          industryLabel={assessment.industry.join(', ')}
-          mode="live"
-          snapshotInsights={snapshotInsights}
-        />
       </div>
 
       <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200 lg:grid-cols-2">
