@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import AssessmentPreviewPanel from '../../components/AssessmentPreviewPanel';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseClient } from '../../lib/supabaseClient';
 import type { AssessmentFormData, SnapshotInsights } from '../../types/assessment';
@@ -95,6 +94,13 @@ type ActionPhase = {
   items: ActionItem[];
 };
 
+type LearningResource = {
+  title: string;
+  description: string;
+  link: string;
+  supports: string;
+};
+
 const sampleFutureRoles: FutureRole[] = [
   {
     title: 'AI-Augmented Project Manager',
@@ -185,6 +191,45 @@ const actionPlanPhases: ActionPhase[] = [
   }
 ];
 
+const learningResources: LearningResource[] = [
+  {
+    title: 'Adaptive Planning with AI Copilots',
+    description: 'A short walkthrough on pairing traditional project planning with AI-assisted estimation.',
+    link: 'https://example.com/adaptive-planning',
+    supports: 'Skill: Adaptive planning with AI copilots'
+  },
+  {
+    title: 'Workflow Automation Starter Kit',
+    description: 'Step-by-step tutorial to automate repetitive updates across your tools.',
+    link: 'https://example.com/automation-starter',
+    supports: 'Skill: Workflow automation fundamentals'
+  },
+  {
+    title: 'Data Storytelling for Teams',
+    description: 'Learn to turn raw insights into crisp narratives that influence decisions.',
+    link: 'https://example.com/data-storytelling',
+    supports: 'Role: Customer Insights Analyst'
+  },
+  {
+    title: 'Lightweight SQL for Product Questions',
+    description: 'Hands-on SQL micro-lessons aimed at PMs and analysts answering real product queries.',
+    link: 'https://example.com/sql-for-product',
+    supports: 'Skill: Basic SQL and lightweight data cleaning'
+  },
+  {
+    title: 'Rituals for Product Ops Teams',
+    description: 'Templates and cadences to keep cross-functional teams unblocked and aligned.',
+    link: 'https://example.com/product-ops-rituals',
+    supports: 'Role: Product Operations Specialist'
+  },
+  {
+    title: 'Interview-Ready Case Notes',
+    description: 'Guide to packaging your projects into concise case stories with measurable impact.',
+    link: 'https://example.com/interview-case-notes',
+    supports: 'Skill: Stakeholder storytelling'
+  }
+];
+
 const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -222,10 +267,31 @@ const RoleSkillsCard = ({ role, summary, skills }: RoleSkill) => (
   </article>
 );
 
+const LearningResourceCard = ({ title, description, link, supports }: LearningResource) => (
+  <article className="flex h-full flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
+    <div className="space-y-1">
+      <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
+        Resource
+        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200">{supports}</span>
+      </p>
+      <h3 className="text-base font-semibold text-white">{title}</h3>
+      <p className="text-sm text-slate-300">{description}</p>
+    </div>
+    <a
+      href={link}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 hover:text-emerald-200"
+    >
+      Open resource
+      <span aria-hidden>↗</span>
+    </a>
+  </article>
+);
+
 function Report() {
   const { session } = useAuth();
   const [assessment, setAssessment] = useState<AssessmentFormData | null>(null);
-  const [snapshotInsights, setSnapshotInsights] = useState<SnapshotInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
@@ -281,7 +347,6 @@ function Report() {
       };
 
       setAssessment(normalizedFormData);
-      setSnapshotInsights(data.snapshot_insights || null);
       setLoading(false);
     };
 
@@ -470,6 +535,21 @@ function Report() {
                 })}
               </ul>
             </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Learning resources</p>
+          <h2 className="text-lg font-semibold text-white">Curated support for your next skills</h2>
+          <p className="text-sm text-slate-300">
+            Each resource is tied to a specific skill or role so you know exactly how it moves you forward.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {learningResources.map((resource) => (
+            <LearningResourceCard key={resource.title} {...resource} />
           ))}
         </div>
       </section>
