@@ -83,6 +83,18 @@ type RoleSkill = {
   skills: string[];
 };
 
+type ActionItem = {
+  id: string;
+  title: string;
+  estimate: string;
+};
+
+type ActionPhase = {
+  title: string;
+  description: string;
+  items: ActionItem[];
+};
+
 const sampleFutureRoles: FutureRole[] = [
   {
     title: 'AI-Augmented Project Manager',
@@ -140,6 +152,39 @@ const roleSkillGroups: RoleSkill[] = [
   }
 ];
 
+const actionPlanPhases: ActionPhase[] = [
+  {
+    title: 'Month 1 – Foundations',
+    description: 'Stabilize your baseline with lightweight systems and clarity on where you are heading.',
+    items: [
+      { id: 'm1-1', title: 'Draft a 90-day vision and align it with your manager or mentor', estimate: '~1h/week' },
+      { id: 'm1-2', title: 'Complete a practical AI-aware project planning course', estimate: '~2h/week' },
+      { id: 'm1-3', title: 'Map your current projects and flag 2–3 automation opportunities', estimate: '~1h/week' },
+      { id: 'm1-4', title: 'Create a simple operating cadence (weekly review + backlog grooming)', estimate: '~1h/week' }
+    ]
+  },
+  {
+    title: 'Month 2 – Momentum',
+    description: 'Ship visible wins that link your strengths to the future roles you want.',
+    items: [
+      { id: 'm2-1', title: 'Pilot an AI-assisted workflow (e.g., drafting briefs, summarising research)', estimate: '~2h/week' },
+      { id: 'm2-2', title: 'Publish a short case note on what worked and what you’d change next time', estimate: '~1h/week' },
+      { id: 'm2-3', title: 'Shadow or pair with someone already in your target role for one project', estimate: '~1.5h/week' },
+      { id: 'm2-4', title: 'Refresh your portfolio or internal wiki with new examples', estimate: '~1h/week' }
+    ]
+  },
+  {
+    title: 'Month 3 – Proof',
+    description: 'Translate your wins into evidence and set up repeatable habits.',
+    items: [
+      { id: 'm3-1', title: 'Package a “before and after” story that highlights measurable impact', estimate: '~1h/week' },
+      { id: 'm3-2', title: 'Build a reusable template or checklist for your team', estimate: '~1.5h/week' },
+      { id: 'm3-3', title: 'Update your LinkedIn headline and bio with the outcomes you delivered', estimate: '~0.5h/week' },
+      { id: 'm3-4', title: 'Book a feedback session to validate your next quarter focus', estimate: '~1h/week' }
+    ]
+  }
+];
+
 const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -183,6 +228,7 @@ function Report() {
   const [snapshotInsights, setSnapshotInsights] = useState<SnapshotInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchLatestAssessment = async () => {
@@ -249,6 +295,18 @@ function Report() {
       : parseJsonArray(assessment.lookingFor as string | null);
     return buildGoalText(lookingForArray, assessment.transitionTarget);
   }, [assessment]);
+
+  const toggleAction = (id: string) => {
+    setCompletedActions((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   if (loading) {
     return <p className="text-slate-200">Loading your report…</p>;
@@ -350,18 +408,76 @@ function Report() {
           ))}
         </div>
       </section>
-      
-      <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200 lg:grid-cols-2">
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">90-day action plan</p>
-          <p className="text-base font-semibold text-white">Checklists and milestones coming soon</p>
-          <p className="text-sm text-slate-300">You will see a sequenced, trackable plan with clear done states.</p>
+
+      <section className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="space-y-1">
+          <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">90-day action plan</p>
+          <h2 className="text-lg font-semibold text-white">A calm, paced plan across three months</h2>
+          <p className="text-sm text-slate-300">
+            Use the checkboxes to mark progress. Each action includes a light weekly time signal so you can fit it in
+            alongside work and life.
+          </p>
         </div>
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Interview support</p>
-          <p className="text-base font-semibold text-white">Talking points and headlines pending</p>
-          <p className="text-sm text-slate-300">We will add interview talking points and a LinkedIn headline suggestion.</p>
+        <div className="grid gap-4 md:grid-cols-3">
+          {actionPlanPhases.map((phase) => (
+            <article
+              key={phase.title}
+              className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm"
+            >
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-300">{phase.title}</p>
+                <p className="text-sm text-slate-200">{phase.description}</p>
+              </div>
+              <ul className="space-y-2">
+                {phase.items.map((item) => {
+                  const actionId = `action-${item.id}`;
+                  const isCompleted = completedActions.has(item.id);
+
+                  return (
+                    <li key={item.id}>
+                      <label
+                        htmlFor={actionId}
+                        className={`group flex items-start gap-3 rounded-lg border px-3 py-2 transition hover:border-emerald-400/70 ${
+                          isCompleted
+                            ? 'border-emerald-400/70 bg-emerald-500/10 text-emerald-50'
+                            : 'border-slate-800/70 bg-slate-900/80 text-slate-100'
+                        }`}
+                      >
+                        <input
+                          id={actionId}
+                          type="checkbox"
+                          checked={isCompleted}
+                          onChange={() => toggleAction(item.id)}
+                          className="sr-only"
+                        />
+                        <span
+                          aria-hidden
+                          className={`mt-1 flex h-5 w-5 items-center justify-center rounded border text-xs font-semibold transition ${
+                            isCompleted
+                              ? 'border-emerald-300 bg-emerald-400 text-slate-900'
+                              : 'border-slate-600 bg-slate-800 text-transparent'
+                          }`}
+                        >
+                          ✓
+                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium leading-snug">{item.title}</span>
+                          <span className="text-xs text-slate-300">{item.estimate} to keep moving</span>
+                        </div>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </article>
+          ))}
         </div>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
+        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Interview support</p>
+        <p className="text-base font-semibold text-white">Talking points and headlines pending</p>
+        <p className="text-sm text-slate-300">We will add interview talking points and a LinkedIn headline suggestion.</p>
       </section>
     </div>
   );
