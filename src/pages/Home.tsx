@@ -1435,9 +1435,10 @@ function Home() {
                       </p>
                       <Link
                         to="/login"
-                        className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-200/60 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                        className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-400 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/70 transition hover:translate-y-[-1px] hover:shadow-emerald-200/90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
                       >
-                        Log in to unlock
+                        Log in to unlock everything
+                        <span aria-hidden="true">→</span>
                       </Link>
                     </div>
                   </div>

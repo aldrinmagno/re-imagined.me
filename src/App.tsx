@@ -15,6 +15,7 @@ import Roadmap from './pages/portal/Roadmap';
 import Journal from './pages/portal/Journal';
 import Community from './pages/portal/Community';
 import Profile from './pages/portal/Profile';
+import Report from './pages/portal/Report';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
 
         <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
           <Route path="/portal" element={<PortalHome />} />
+          <Route path="/portal/report" element={<Report />} />
           <Route path="/portal/roadmap" element={<Roadmap />} />
           <Route path="/portal/journal" element={<Journal />} />
           <Route path="/portal/community" element={<Community />} />
