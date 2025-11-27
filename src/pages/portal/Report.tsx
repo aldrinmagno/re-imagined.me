@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseClient } from '../../lib/supabaseClient';
-import type { AssessmentFormData } from '../../types/assessment';
+import type { AssessmentFormData, SnapshotInsights } from '../../types/assessment';
 
 interface AssessmentRecord {
   id: string;
