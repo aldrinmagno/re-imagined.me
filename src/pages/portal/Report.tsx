@@ -302,7 +302,17 @@ function Report() {
   const [assessment, setAssessment] = useState<AssessmentFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
+  const [reportId, setReportId] = useState<string | null>(null);
+  const [actionProgressByReport, setActionProgressByReport] = useState<Record<string, Set<string>>>({});
+
+  useEffect(() => {
+    if (reportId) {
+      setActionProgressByReport((prev) => {
+        if (prev[reportId]) return prev;
+        return { ...prev, [reportId]: new Set() };
+      });
+    }
+  }, [reportId]);
 
   useEffect(() => {
     const fetchLatestAssessment = async () => {
@@ -332,6 +342,7 @@ function Report() {
 
       if (!data) {
         setAssessment(createFallbackFormData(session.user.email));
+        setReportId(null);
         setLoading(false);
         return;
       }
@@ -355,6 +366,7 @@ function Report() {
       };
 
       setAssessment(normalizedFormData);
+      setReportId(data.id);
       setLoading(false);
     };
 
@@ -369,15 +381,25 @@ function Report() {
     return buildGoalText(lookingForArray, assessment.transitionTarget);
   }, [assessment]);
 
+  const completedActions = useMemo(() => {
+    if (!reportId) return new Set<string>();
+    return actionProgressByReport[reportId] ?? new Set<string>();
+  }, [actionProgressByReport, reportId]);
+
   const toggleAction = (id: string) => {
-    setCompletedActions((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
+    if (!reportId) return;
+
+    setActionProgressByReport((prev) => {
+      const existing = prev[reportId] ?? new Set<string>();
+      const nextSet = new Set(existing);
+
+      if (nextSet.has(id)) {
+        nextSet.delete(id);
       } else {
-        next.add(id);
+        nextSet.add(id);
       }
-      return next;
+
+      return { ...prev, [reportId]: nextSet };
     });
   };
 
