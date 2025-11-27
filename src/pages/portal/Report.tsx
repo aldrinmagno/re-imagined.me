@@ -230,6 +230,14 @@ const learningResources: LearningResource[] = [
   }
 ];
 
+const interviewPitches = [
+  'I combine deep experience in cross-functional delivery with a growing toolkit of AI copilots to keep teams moving.',
+  'I translate between stakeholders with clear, calm communication and package insights into decisions people can act on.',
+  'I look for practical automation wins that save time without sacrificing quality, then share the playbooks with others.',
+  'I turn ambiguous goals into lightweight plans, measurable milestones, and stories that highlight impact.',
+  'I’m comfortable piloting new tools, learning fast, and teaching teams how to work with them safely.'
+];
+
 const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -554,10 +562,22 @@ function Report() {
         </div>
       </section>
 
-      <section className="space-y-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
-        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Interview support</p>
-        <p className="text-base font-semibold text-white">Talking points and headlines pending</p>
-        <p className="text-sm text-slate-300">We will add interview talking points and a LinkedIn headline suggestion.</p>
+      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Interview support</p>
+          <h2 className="text-lg font-semibold text-white">How to describe yourself in interviews</h2>
+          <p className="text-sm text-slate-300">
+            Use these talking points as a calm, confident way to frame your experience and direction.
+          </p>
+        </div>
+        <ul className="space-y-3 text-sm text-slate-200">
+          {interviewPitches.map((pitch) => (
+            <li key={pitch} className="flex gap-2 rounded-lg border border-slate-800/70 bg-slate-900/80 px-3 py-2">
+              <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
+              <span className="leading-snug">{pitch}</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
