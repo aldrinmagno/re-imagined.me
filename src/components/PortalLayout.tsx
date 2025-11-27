@@ -4,6 +4,7 @@ import Logo from './Logo';
 
 const portalLinks = [
   { to: '/portal', label: 'Home' },
+  { to: '/portal/report', label: 'Report' },
   { to: '/portal/roadmap', label: 'Road map' },
   { to: '/portal/journal', label: 'Journal' },
   { to: '/portal/community', label: 'Community' },
