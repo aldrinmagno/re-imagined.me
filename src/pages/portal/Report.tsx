@@ -165,7 +165,7 @@ function Report() {
         <p className="text-sm text-slate-300">Latest assessment submitted on your account.</p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr,1.4fr]">
+      <div className="grid gap-6">
         <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Where you are now</h2>
