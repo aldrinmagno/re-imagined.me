@@ -72,6 +72,54 @@ const createFallbackFormData = (email: string | null): AssessmentFormData => ({
   password: ''
 });
 
+type FutureRole = {
+  title: string;
+  reasons: string[];
+};
+
+const sampleFutureRoles: FutureRole[] = [
+  {
+    title: 'AI-Augmented Project Manager',
+    reasons: [
+      'Blend people leadership with AI-assisted delivery to steer cross-functional teams',
+      'Use your stakeholder communication skills to translate strategy into clear milestones'
+    ]
+  },
+  {
+    title: 'Customer Insights Analyst',
+    reasons: [
+      'Pair curiosity with data tools to surface patterns in customer behaviour',
+      'Guide teams on which opportunities to pursue based on evidence and empathy'
+    ]
+  },
+  {
+    title: 'Product Operations Specialist',
+    reasons: [
+      'Streamline processes, rituals, and tooling so product teams can ship faster',
+      'Bridge product, engineering, and go-to-market partners with clear playbooks'
+    ]
+  }
+];
+
+const FutureRoleCard = ({ title, reasons }: FutureRole) => (
+  <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Future role</p>
+        <h3 className="text-base font-semibold text-white">{title}</h3>
+      </div>
+    </div>
+    <ul className="space-y-2 text-sm text-slate-200">
+      {reasons.map((reason) => (
+        <li key={reason} className="flex gap-2">
+          <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
+          <span>{reason}</span>
+        </li>
+      ))}
+    </ul>
+  </article>
+);
+
 function Report() {
   const { session } = useAuth();
   const [assessment, setAssessment] = useState<AssessmentFormData | null>(null);
@@ -214,12 +262,24 @@ function Report() {
         </section>
       </div>
 
-      <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200 lg:grid-cols-2">
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Future roles you could grow into</p>
-          <p className="text-base font-semibold text-white">Personalized matches coming soon</p>
-          <p className="text-sm text-slate-300">We will surface 3–5 emerging roles based on your answers and strengths.</p>
+      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Future roles you could grow into</p>
+            <h2 className="text-lg font-semibold text-white">Roles to explore based on your strengths</h2>
+            <p className="text-sm text-slate-300">
+              These examples are tuned for mid-career professionals and can be swapped for personalized matches later.
+            </p>
+          </div>
         </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {sampleFutureRoles.map((role) => (
+            <FutureRoleCard key={role.title} {...role} />
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200 lg:grid-cols-2">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Skills to build next</p>
           <p className="text-base font-semibold text-white">Tailored skill map on the way</p>
