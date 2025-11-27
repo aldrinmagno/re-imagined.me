@@ -19,6 +19,11 @@ interface AssessmentRecord {
   submitted_at: string | null;
 }
 
+interface ActionPlanProgressRecord {
+  action_id: string;
+  completed: boolean;
+}
+
 const parseJsonArray = (value: string | string[] | null): string[] => {
   if (Array.isArray(value)) return value;
 
@@ -304,6 +309,7 @@ function Report() {
   const [error, setError] = useState('');
   const [reportId, setReportId] = useState<string | null>(null);
   const [actionProgressByReport, setActionProgressByReport] = useState<Record<string, Set<string>>>({});
+  const [progressError, setProgressError] = useState('');
 
   useEffect(() => {
     if (reportId) {
@@ -386,21 +392,94 @@ function Report() {
     return actionProgressByReport[reportId] ?? new Set<string>();
   }, [actionProgressByReport, reportId]);
 
-  const toggleAction = (id: string) => {
-    if (!reportId) return;
+  useEffect(() => {
+    if (!reportId || !session?.user?.id) return;
+
+    let isCancelled = false;
+
+    const fetchProgress = async () => {
+      const supabase = getSupabaseClient();
+      const { data, error: fetchError } = await supabase
+        .from('action_plan_progress')
+        .select('action_id, completed')
+        .eq('report_id', reportId)
+        .eq('user_id', session.user.id);
+
+      if (fetchError) {
+        console.error('Error loading action progress', fetchError);
+        setProgressError('We could not load your saved progress right now. You can still use the checkboxes.');
+        return;
+      }
+
+      if (isCancelled || !data) return;
+
+      const completedIds = new Set(
+        (data as ActionPlanProgressRecord[]).filter((row) => row.completed).map((row) => row.action_id)
+      );
+
+      setActionProgressByReport((prev) => ({
+        ...prev,
+        [reportId]: completedIds
+      }));
+      setProgressError('');
+    };
+
+    fetchProgress();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [reportId, session?.user?.id]);
+
+  const toggleAction = async (id: string) => {
+    if (!reportId || !session?.user?.id) return;
+
+    const isCompleted = completedActions.has(id);
+    const nextCompleted = !isCompleted;
 
     setActionProgressByReport((prev) => {
       const existing = prev[reportId] ?? new Set<string>();
       const nextSet = new Set(existing);
 
-      if (nextSet.has(id)) {
-        nextSet.delete(id);
-      } else {
+      if (nextCompleted) {
         nextSet.add(id);
+      } else {
+        nextSet.delete(id);
       }
 
       return { ...prev, [reportId]: nextSet };
     });
+    setProgressError('');
+
+    const supabase = getSupabaseClient();
+    const { error: upsertError } = await supabase.from('action_plan_progress').upsert(
+      {
+        user_id: session.user.id,
+        report_id: reportId,
+        action_id: id,
+        completed: nextCompleted,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: 'user_id,report_id,action_id' }
+    );
+
+    if (upsertError) {
+      console.error('Error saving action progress', upsertError);
+      setProgressError('We could not save that change. Please try again.');
+
+      setActionProgressByReport((prev) => {
+        const existing = prev[reportId] ?? new Set<string>();
+        const nextSet = new Set(existing);
+
+        if (nextCompleted) {
+          nextSet.delete(id);
+        } else {
+          nextSet.add(id);
+        }
+
+        return { ...prev, [reportId]: nextSet };
+      });
+    }
   };
 
   if (loading) {
@@ -512,6 +591,7 @@ function Report() {
             Use the checkboxes to mark progress. Each action includes a light weekly time signal so you can fit it in
             alongside work and life.
           </p>
+          {progressError ? <p className="text-sm text-amber-300">{progressError}</p> : null}
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {actionPlanPhases.map((phase) => (
