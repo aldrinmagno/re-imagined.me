@@ -490,6 +490,16 @@ function Home() {
           );
           return;
         }
+
+        const { data: signInResult, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email.trim(),
+          password: formData.password
+        });
+
+        if (signInError || !signInResult.session) {
+          setError('We could not sign you in after creating your account. Please try logging in and submitting again.');
+          return;
+        }
       }
 
       const normalizedFormData: AssessmentFormData = {
@@ -539,13 +549,19 @@ function Home() {
 
       if (assessmentRecord?.id) {
         try {
-          await persistSnapshotReport({
-            assessmentId: assessmentRecord.id,
-            formData: normalizedFormData,
-            goalText,
-            industryLabels,
-            insights
-          });
+          const { data: sessionData } = await supabase.auth.getSession();
+
+          if (!sessionData.session) {
+            console.warn('Skipping report persistence because no active session is available.');
+          } else {
+            await persistSnapshotReport({
+              assessmentId: assessmentRecord.id,
+              formData: normalizedFormData,
+              goalText,
+              industryLabels,
+              insights
+            });
+          }
         } catch (reportError) {
           console.error('Failed to populate report content tables', reportError);
         }
