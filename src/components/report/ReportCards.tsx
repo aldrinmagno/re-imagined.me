@@ -1,4 +1,4 @@
-import type { FutureRole, RoleSkill, LearningResource } from '../../data/reportContent';
+import type { FutureRole, RoleSkillGroup, LearningResource } from '../../types/report';
 
 export const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
@@ -19,7 +19,7 @@ export const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   </article>
 );
 
-export const RoleSkillsCard = ({ role, summary, skills }: RoleSkill) => (
+export const RoleSkillsCard = ({ role, summary, skills }: RoleSkillGroup) => (
   <article className="flex h-full flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
     <div className="space-y-1">
       <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Skills to build</p>
@@ -37,24 +37,28 @@ export const RoleSkillsCard = ({ role, summary, skills }: RoleSkill) => (
   </article>
 );
 
-export const LearningResourceCard = ({ title, description, link, supports }: LearningResource) => (
-  <article className="flex h-full flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
-    <div className="space-y-1">
-      <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
-        Resource
-        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200">{supports}</span>
-      </p>
-      <h3 className="text-base font-semibold text-white">{title}</h3>
-      <p className="text-sm text-slate-300">{description}</p>
-    </div>
-    <a
-      href={link}
-      target="_blank"
-      rel="noreferrer"
-      className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 hover:text-emerald-200"
-    >
-      Open resource
-      <span aria-hidden>↗</span>
-    </a>
-  </article>
-);
+export const LearningResourceCard = ({ title, description, link, supports }: LearningResource) => {
+  const supportLabel = supports || 'General';
+
+  return (
+    <article className="flex h-full flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
+      <div className="space-y-1">
+        <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
+          Resource
+          <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-200">{supportLabel}</span>
+        </p>
+        <h3 className="text-base font-semibold text-white">{title}</h3>
+        <p className="text-sm text-slate-300">{description || 'Details coming soon.'}</p>
+      </div>
+      <a
+        href={link}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 hover:text-emerald-200"
+      >
+        Open resource
+        <span aria-hidden>↗</span>
+      </a>
+    </article>
+  );
+};

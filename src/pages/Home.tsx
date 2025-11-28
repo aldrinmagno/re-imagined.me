@@ -6,7 +6,7 @@ import { getSupabaseClient } from '../lib/supabaseClient';
 import { generateSnapshotInsights } from '../lib/generateSnapshotInsights';
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 import { useAuth } from '../context/AuthContext';
-import { jobTitles } from '../data/jobTitles';
+import { jobTitles as fallbackJobTitles } from '../data/jobTitles';
 
 type StepType = 'input' | 'textarea' | 'select' | 'multiselect' | 'radio' | 'signup';
 
@@ -65,6 +65,7 @@ function Home() {
   const [isJobTitleOpen, setIsJobTitleOpen] = useState(false);
   const [jobTitleQuery, setJobTitleQuery] = useState('');
   const [isCustomJobTitle, setIsCustomJobTitle] = useState(false);
+  const [jobTitleOptions, setJobTitleOptions] = useState<string[]>(fallbackJobTitles);
 
   const interactiveRefs = useRef<Record<string, HTMLElement | null>>({});
   const jobTitleDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -100,6 +101,32 @@ function Home() {
   useEffect(() => {
     setStepAnimationKey((prev) => prev + 1);
   }, [currentStep]);
+
+  useEffect(() => {
+    const fetchJobTitles = async () => {
+      try {
+        const supabase = getSupabaseClient();
+        const { data, error } = await supabase.from('job_titles').select('title').order('title', { ascending: true });
+
+        if (error) {
+          console.error('Error loading job titles', error);
+          return;
+        }
+
+        const titles = (data as { title: string | null }[])
+          .map((entry) => entry.title?.trim())
+          .filter((title): title is string => Boolean(title));
+
+        if (titles.length > 0) {
+          setJobTitleOptions(titles);
+        }
+      } catch (fetchError) {
+        console.error('Unexpected error loading job titles', fetchError);
+      }
+    };
+
+    fetchJobTitles();
+  }, []);
 
   useEffect(() => {
     if (isAssessmentMode) {
@@ -842,7 +869,7 @@ function Home() {
                       }`;
 
                       if (step.id === 'jobTitle') {
-                        const filteredJobTitles = jobTitles.filter((title) =>
+                        const filteredJobTitles = jobTitleOptions.filter((title) =>
                           title.toLowerCase().includes(jobTitleQuery.toLowerCase().trim())
                         );
 
