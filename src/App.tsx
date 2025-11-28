@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout';
 import PortalLayout from './components/PortalLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,7 +15,20 @@ import Roadmap from './pages/portal/Roadmap';
 import Journal from './pages/portal/Journal';
 import Community from './pages/portal/Community';
 import Profile from './pages/portal/Profile';
-import Report from './pages/portal/Report';
+import ReportLayout from './components/report/ReportLayout';
+import ReportOverview from './pages/portal/report/ReportOverview';
+import ReportRoles from './pages/portal/report/ReportRoles';
+import ReportSkills from './pages/portal/report/ReportSkills';
+import ReportPlan from './pages/portal/report/ReportPlan';
+import ReportResources from './pages/portal/report/ReportResources';
+import ReportInterview from './pages/portal/report/ReportInterview';
+
+const ReportAliasRedirect = () => {
+  const { section } = useParams();
+  const target = section ? `/portal/report/${section}` : '/portal/report/overview';
+
+  return <Navigate to={target} replace />;
+};
 
 function App() {
   return (
@@ -34,12 +47,23 @@ function App() {
 
         <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
           <Route path="/portal" element={<PortalHome />} />
-          <Route path="/portal/report" element={<Report />} />
+          <Route path="/portal/report" element={<ReportLayout />}>
+            <Route index element={<Navigate to="/portal/report/overview" replace />} />
+            <Route path="overview" element={<ReportOverview />} />
+            <Route path="roles" element={<ReportRoles />} />
+            <Route path="skills" element={<ReportSkills />} />
+            <Route path="plan" element={<ReportPlan />} />
+            <Route path="resources" element={<ReportResources />} />
+            <Route path="interview" element={<ReportInterview />} />
+          </Route>
           <Route path="/portal/roadmap" element={<Roadmap />} />
           <Route path="/portal/journal" element={<Journal />} />
           <Route path="/portal/community" element={<Community />} />
           <Route path="/portal/profile" element={<Profile />} />
         </Route>
+
+        <Route path="/report" element={<Navigate to="/report/overview" replace />} />
+        <Route path="/report/:section" element={<ReportAliasRedirect />} />
       </Routes>
     </Router>
   );
