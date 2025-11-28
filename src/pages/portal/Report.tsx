@@ -243,6 +243,9 @@ const interviewPitches = [
   'I’m comfortable piloting new tools, learning fast, and teaching teams how to work with them safely.'
 ];
 
+const sampleHeadlineSuggestion =
+  'Project Manager | Transitioning into AI-augmented Operations | Turning complex workflows into simple systems';
+
 const FutureRoleCard = ({ title, reasons }: FutureRole) => (
   <article className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
     <div className="flex items-start justify-between gap-3">
@@ -680,6 +683,21 @@ function Report() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">LinkedIn headline suggestion</p>
+          <h2 className="text-lg font-semibold text-white">Use this as a starting point</h2>
+          <p className="text-sm text-slate-300">
+            A sample headline crafted for this profile. Swap in your own role, target focus, or proof points when you
+            update it later.
+          </p>
+        </div>
+        <div className="rounded-xl border border-emerald-400/40 bg-emerald-500/5 p-4 text-sm text-slate-100">
+          <p className="font-semibold text-white">{sampleHeadlineSuggestion}</p>
+          <p className="mt-2 text-xs text-emerald-200">Designed to be replaced with a dynamic headline soon.</p>
+        </div>
       </section>
     </div>
   );
