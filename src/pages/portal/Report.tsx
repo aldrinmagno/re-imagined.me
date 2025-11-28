@@ -243,6 +243,12 @@ const interviewPitches = [
   'I’m comfortable piloting new tools, learning fast, and teaching teams how to work with them safely.'
 ];
 
+const interviewTalkingPoints = [
+  'Show how your current role already uses the same strengths you’ll need in the next one—like coordinating stakeholders or simplifying messy workflows.',
+  'Share a recent project where you adapted quickly to a new process, domain, or tool, and explain the measurable outcome.',
+  'Highlight how you’re experimenting with AI or automation to work faster and teach others, even if it’s a small pilot.'
+];
+
 const sampleHeadlineSuggestion =
   'Project Manager | Transitioning into AI-augmented Operations | Turning complex workflows into simple systems';
 
@@ -683,6 +689,21 @@ function Report() {
             </li>
           ))}
         </ul>
+
+        <div className="mt-6 space-y-2">
+          <h3 className="text-base font-semibold text-white">Talking points for interviews</h3>
+          <p className="text-sm text-slate-300">
+            Keep these in your back pocket to connect your past work to where you&apos;re headed next.
+          </p>
+          <ul className="space-y-2 text-sm text-slate-200">
+            {interviewTalkingPoints.map((point) => (
+              <li key={point} className="flex gap-2 rounded-lg border border-slate-800/60 bg-slate-900/80 px-3 py-2">
+                <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
+                <span className="leading-snug">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
