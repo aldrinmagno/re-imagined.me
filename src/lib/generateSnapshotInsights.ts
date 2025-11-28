@@ -1,9 +1,15 @@
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
+import { getSupabaseClient } from './supabaseClient';
 
 interface SnapshotInput {
   formData: AssessmentFormData;
   goalText: string;
   industryLabels?: string[];
+}
+
+interface PersistSnapshotInput extends SnapshotInput {
+  assessmentId: string;
+  insights: SnapshotInsights;
 }
 
 const fallbackFutureRoles: SnapshotInsights['futureRoles'] = [
@@ -298,7 +304,7 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.1',
         temperature: 0.3,
         messages: [
           {
@@ -345,4 +351,181 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
     console.error('Error generating snapshot insights', error);
     return fallbackInsights;
   }
+};
+
+const parsePhaseLabel = (phase: string, index: number) => {
+  if (!phase) {
+    return { monthLabel: `Month ${index + 1}`, title: `Phase ${index + 1}` };
+  }
+
+  const emDashSplit = phase.split('—').map((part) => part.trim()).filter(Boolean);
+  if (emDashSplit.length >= 2) {
+    return { monthLabel: emDashSplit[0], title: emDashSplit.slice(1).join(' — ') };
+  }
+
+  const dashSplit = phase.split('-').map((part) => part.trim()).filter(Boolean);
+  if (dashSplit.length >= 2) {
+    return { monthLabel: dashSplit[0], title: dashSplit.slice(1).join(' - ') };
+  }
+
+  return { monthLabel: `Month ${index + 1}`, title: phase };
+};
+
+export const persistSnapshotReport = async (input: PersistSnapshotInput) => {
+  const supabase = getSupabaseClient();
+  const { assessmentId, insights } = input;
+  const structuredSignals = buildStructuredSignals(input);
+
+  const reportSummary = `${insights.futureDirections} ${insights.nextSteps}`.trim();
+  const interviewOverview = `${insights.workEvolution}\n${insights.nextSteps}`.trim();
+  const headlineSuggestion = insights.futureRoles?.[0]?.title
+    ? `${insights.futureRoles[0].title} who blends ${formatStrengths(structuredSignals.strengths) || 'core strengths'}`
+    : `Future-ready ${input.formData.jobTitle || 'professional'}`;
+
+  const { data: reportRow, error: reportError } = await supabase
+    .from('reports')
+    .insert({
+      assessment_id: assessmentId,
+      title: 'Career snapshot',
+      summary: reportSummary || null,
+      strengths_snapshot: {
+        strengths: structuredSignals.strengths,
+        strengthsOther: structuredSignals.strengthsOther,
+        workPreferences: structuredSignals.workPreferences,
+        typicalWeek: structuredSignals.typicalWeek
+      },
+      where_you_are: {
+        jobTitle: structuredSignals.jobTitle,
+        industries: structuredSignals.industries,
+        yearsExperience: structuredSignals.yearsExperience,
+        lookingFor: structuredSignals.lookingFor,
+        transitionTarget: structuredSignals.transitionTarget
+      },
+      goal_text: input.goalText,
+      headline_suggestion: headlineSuggestion,
+      interview_overview: interviewOverview
+    })
+    .select('id')
+    .single();
+
+  if (reportError || !reportRow) {
+    console.error('Failed to create report', reportError);
+    throw reportError || new Error('Unable to create report');
+  }
+
+  const reportId = reportRow.id as string;
+
+  const futureRolesPayload = insights.futureRoles.map((role, index) => ({
+    report_id: reportId,
+    title: role.title,
+    description: null,
+    reasons: role.reasons,
+    ordering: index
+  }));
+
+  const { data: futureRolesRows, error: futureRolesError } = await supabase
+    .from('future_roles')
+    .insert(futureRolesPayload)
+    .select('id, title');
+
+  if (futureRolesError) {
+    console.error('Failed to create future roles', futureRolesError);
+    throw futureRolesError;
+  }
+
+  const futureRoleIdByTitle = new Map<string, string>();
+  (futureRolesRows || []).forEach((row: { id: string; title: string }) => {
+    futureRoleIdByTitle.set(row.title, row.id);
+  });
+
+  const skillsPayload = insights.skillsByRole.flatMap((entry) =>
+    entry.skills.map((skill, index) => ({
+      report_id: reportId,
+      future_role_id: futureRoleIdByTitle.get(entry.role) || null,
+      skill_name: skill,
+      skill_summary: entry.skills.length > 3 ? entry.skills.slice(0, 3).join(', ') : null,
+      category: null,
+      ordering: index
+    }))
+  );
+
+  const { error: skillsError } = await supabase.from('skills_to_build').insert(skillsPayload);
+
+  if (skillsError) {
+    console.error('Failed to create skills', skillsError);
+    throw skillsError;
+  }
+
+  const phasesPayload = insights.actionPlan.map((phase, index) => {
+    const parsed = parsePhaseLabel(phase.phase, index);
+    return {
+      report_id: reportId,
+      future_role_id: null,
+      month_label: parsed.monthLabel,
+      title: parsed.title,
+      description: insights.nextSteps,
+      position: index
+    };
+  });
+
+  const { data: phaseRows, error: phasesError } = await supabase
+    .from('ninety_day_plan_phases')
+    .insert(phasesPayload)
+    .select('id, position');
+
+  if (phasesError) {
+    console.error('Failed to create plan phases', phasesError);
+    throw phasesError;
+  }
+
+  const actionsPayload = phaseRows.flatMap((phaseRow, phaseIndex) =>
+    (insights.actionPlan[phaseIndex]?.items || []).map((item, itemIndex) => ({
+      id: crypto.randomUUID(),
+      report_id: reportId,
+      phase_id: phaseRow.id,
+      future_role_id: null,
+      label: item,
+      time_per_week: null,
+      position: itemIndex
+    }))
+  );
+
+  const { error: actionsError } = await supabase.from('plan_actions').insert(actionsPayload);
+
+  if (actionsError) {
+    console.error('Failed to create plan actions', actionsError);
+    throw actionsError;
+  }
+
+  const learningResourcesPayload = insights.learningResources.map((resource, index) => ({
+    report_id: reportId,
+    future_role_id: null,
+    skill_id: null,
+    title: resource.label,
+    description: null,
+    url: resource.href || '#',
+    tags: [],
+    position: index
+  }));
+
+  const { error: resourcesError } = await supabase.from('learning_resources').insert(learningResourcesPayload);
+
+  if (resourcesError) {
+    console.error('Failed to create learning resources', resourcesError);
+    throw resourcesError;
+  }
+
+  const { error: interviewError } = await supabase.from('interview_data').insert({
+    report_id: reportId,
+    headline: headlineSuggestion,
+    how_to_describe: `${insights.futureDirections}\n${insights.nextSteps}`,
+    talking_points: insights.interviewTalkingPoints
+  });
+
+  if (interviewError) {
+    console.error('Failed to create interview data', interviewError);
+    throw interviewError;
+  }
+
+  return reportId;
 };

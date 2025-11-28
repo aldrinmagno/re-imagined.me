@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ClipboardList, Flag, Sparkles, X } from 'lucide-react';
 import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
-import { generateSnapshotInsights } from '../lib/generateSnapshotInsights';
+import { generateSnapshotInsights, persistSnapshotReport } from '../lib/generateSnapshotInsights';
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
 import { useAuth } from '../context/AuthContext';
 import { jobTitles as fallbackJobTitles } from '../data/jobTitles';
@@ -492,13 +492,15 @@ function Home() {
         }
       }
 
+      const normalizedFormData: AssessmentFormData = {
+        ...formData,
+        strengths: strengthsWithOther,
+        lookingFor: lookingForSelections,
+        transitionTarget: transitionTargetValue
+      };
+
       const insights = await generateSnapshotInsights({
-        formData: {
-          ...formData,
-          strengths: strengthsWithOther,
-          lookingFor: lookingForSelections,
-          transitionTarget: transitionTargetValue
-        },
+        formData: normalizedFormData,
         goalText,
         industryLabels
       });
@@ -510,25 +512,43 @@ function Home() {
           ? transitionTargetValue
           : null;
 
-      const { error: submissionError } = await supabase.from('assessment_responses').insert({
-        job_title: formData.jobTitle,
-        industry: formData.industry,
-        years_experience: yearsExperienceValue,
-        strengths: serializedStrengths,
-        typical_week: formData.typicalWeek || null,
-        looking_for: serializedLookingFor,
-        transition_target: transitionTarget,
-        work_preferences: formData.workPreferences || null,
-        email: formData.email.trim(),
-        full_name: formData.fullName || null,
-        submitted_at: new Date().toISOString(),
-        snapshot_insights: insights
-      });
+      const { data: assessmentRecord, error: submissionError } = await supabase
+        .from('assessment_responses')
+        .insert({
+          job_title: formData.jobTitle,
+          industry: formData.industry,
+          years_experience: yearsExperienceValue,
+          strengths: serializedStrengths,
+          typical_week: formData.typicalWeek || null,
+          looking_for: serializedLookingFor,
+          transition_target: transitionTarget,
+          work_preferences: formData.workPreferences || null,
+          email: formData.email.trim(),
+          full_name: formData.fullName || null,
+          submitted_at: new Date().toISOString(),
+          snapshot_insights: insights
+        })
+        .select('id')
+        .single();
 
       if (submissionError) {
         console.error('Failed to save assessment response', submissionError);
         setError('We couldn\'t save your answers. Please try again.');
         return;
+      }
+
+      if (assessmentRecord?.id) {
+        try {
+          await persistSnapshotReport({
+            assessmentId: assessmentRecord.id,
+            formData: normalizedFormData,
+            goalText,
+            industryLabels,
+            insights
+          });
+        } catch (reportError) {
+          console.error('Failed to populate report content tables', reportError);
+        }
       }
 
       setSnapshotInsights(insights);
