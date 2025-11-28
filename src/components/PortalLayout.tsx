@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 import { reportSectionLinks } from './report/ReportLayout';
@@ -14,9 +14,6 @@ const portalLinks = [
 
 function PortalLayout() {
   const { user, signOut } = useAuth();
-  const location = useLocation();
-  const isReportSectionActive = location.pathname.startsWith('/portal/report');
-
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="border-b border-slate-800 bg-slate-900/95">
@@ -57,7 +54,7 @@ function PortalLayout() {
                   {link.label}
                 </NavLink>
 
-                {isReportLink && isReportSectionActive && link.children && (
+                {isReportLink && link.children && (
                   <div className="ml-2 flex flex-col gap-1 border-l border-slate-800 pl-2">
                     {link.children.map((child) => (
                       <NavLink
