@@ -1,10 +1,22 @@
-import {
-  interviewPitches,
-  interviewTalkingPoints,
-  sampleHeadlineSuggestion
-} from '../../../data/reportContent';
+import { useReportContext } from '../../../components/report/ReportLayout';
 
 function ReportInterview() {
+  const { reportContent } = useReportContext();
+  const interview = reportContent.interview;
+
+  if (!interview) {
+    return (
+      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Interview support</p>
+          <h2 className="text-lg font-semibold text-white">How to describe yourself in interviews</h2>
+          <p className="text-sm text-slate-300">Interview guidance will show up once your report content is ready.</p>
+        </div>
+        <p className="text-sm text-slate-300">No interview guidance available yet.</p>
+      </section>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-slate-200">
@@ -16,7 +28,7 @@ function ReportInterview() {
           </p>
         </div>
         <ul className="space-y-3 text-sm text-slate-200">
-          {interviewPitches.map((pitch) => (
+          {interview.pitches.map((pitch) => (
             <li key={pitch} className="flex gap-2 rounded-lg border border-slate-800/70 bg-slate-900/80 px-3 py-2">
               <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
               <span className="leading-snug">{pitch}</span>
@@ -30,7 +42,7 @@ function ReportInterview() {
             Keep these in your back pocket to connect your past work to where you&apos;re headed next.
           </p>
           <ul className="space-y-2 text-sm text-slate-200">
-            {interviewTalkingPoints.map((point) => (
+            {interview.talkingPoints.map((point) => (
               <li key={point} className="flex gap-2 rounded-lg border border-slate-800/60 bg-slate-900/80 px-3 py-2">
                 <span className="mt-1 inline-flex h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300" aria-hidden />
                 <span className="leading-snug">{point}</span>
@@ -50,8 +62,8 @@ function ReportInterview() {
           </p>
         </div>
         <div className="rounded-xl border border-emerald-400/40 bg-emerald-500/5 p-4 text-sm text-slate-100">
-          <p className="font-semibold text-white">{sampleHeadlineSuggestion}</p>
-          <p className="mt-2 text-xs text-emerald-200">Designed to be replaced with a dynamic headline soon.</p>
+          <p className="font-semibold text-white">{interview.headline || 'Personalized headline coming soon.'}</p>
+          <p className="mt-2 text-xs text-emerald-200">Loaded from your saved report data.</p>
         </div>
       </section>
     </div>
