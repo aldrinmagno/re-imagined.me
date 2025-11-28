@@ -612,6 +612,10 @@ function Home() {
                     <ArrowRight size={20} />
                   </span>
                 </button>
+                <p className="mt-3 max-w-md text-center text-xs text-slate-600">
+                  re-imagined.me will be a low-cost subscription (around $9/month). Early users may
+                  receive discounted or lifetime pricing.
+                </p>
                 <Link
                   to="/sample-report"
                   className="mt-4 text-sm font-semibold text-emerald-700 underline decoration-emerald-300/70 transition hover:text-emerald-600"
