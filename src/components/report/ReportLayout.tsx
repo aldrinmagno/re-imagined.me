@@ -190,10 +190,11 @@ export const useReportContext = () => {
 function ReportLayout() {
   const { session } = useAuth();
   const [assessment, setAssessment] = useState<AssessmentFormData | null>(null);
+  const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reportId, setReportId] = useState<string | null>(null);
-  const [actionProgressByReport, setActionProgressByReport] = useState<Record<string, Set<string>>>({});
+  const [actionProgressByAssessment, setActionProgressByAssessment] = useState<Record<string, Set<string>>>({});
   const [progressError, setProgressError] = useState('');
   const [reportContent, setReportContent] = useState<ReportContent>(createEmptyReportContent());
   const [contentError, setContentError] = useState('');
@@ -365,13 +366,13 @@ function ReportLayout() {
   };
 
   useEffect(() => {
-    if (reportId) {
-      setActionProgressByReport((prev) => {
-        if (prev[reportId]) return prev;
-        return { ...prev, [reportId]: new Set() };
+    if (assessmentId) {
+      setActionProgressByAssessment((prev) => {
+        if (prev[assessmentId]) return prev;
+        return { ...prev, [assessmentId]: new Set() };
       });
     }
-  }, [reportId]);
+  }, [assessmentId]);
 
   useEffect(() => {
     const fetchLatestAssessment = async () => {
@@ -401,6 +402,7 @@ function ReportLayout() {
 
       if (!data) {
         setAssessment(createFallbackFormData(session.user.email));
+        setAssessmentId(null);
         setReportId(null);
         setReportContent(createEmptyReportContent());
         setLoading(false);
@@ -426,6 +428,7 @@ function ReportLayout() {
       };
 
       setAssessment(normalizedFormData);
+      setAssessmentId(data.id);
 
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
@@ -467,12 +470,12 @@ function ReportLayout() {
   }, [assessment]);
 
   const completedActions = useMemo(() => {
-    if (!reportId) return new Set<string>();
-    return actionProgressByReport[reportId] ?? new Set<string>();
-  }, [actionProgressByReport, reportId]);
+    if (!assessmentId) return new Set<string>();
+    return actionProgressByAssessment[assessmentId] ?? new Set<string>();
+  }, [actionProgressByAssessment, assessmentId]);
 
   useEffect(() => {
-    if (!reportId || !session?.user?.id) return;
+    if (!assessmentId || !session?.user?.id) return;
 
     let isCancelled = false;
 
@@ -481,7 +484,7 @@ function ReportLayout() {
       const { data, error: fetchError } = await supabase
         .from('action_plan_progress')
         .select('action_id, completed')
-        .eq('report_id', reportId)
+        .eq('report_id', assessmentId)
         .eq('user_id', session.user.id);
 
       if (fetchError) {
@@ -494,9 +497,9 @@ function ReportLayout() {
 
       const completedIds = new Set((data as ActionPlanProgressRecord[]).filter((row) => row.completed).map((row) => row.action_id));
 
-      setActionProgressByReport((prev) => ({
+      setActionProgressByAssessment((prev) => ({
         ...prev,
-        [reportId]: completedIds
+        [assessmentId]: completedIds
       }));
       setProgressError('');
     };
@@ -506,16 +509,16 @@ function ReportLayout() {
     return () => {
       isCancelled = true;
     };
-  }, [reportId, session?.user?.id]);
+  }, [assessmentId, session?.user?.id]);
 
   const toggleAction = async (id: string) => {
-    if (!reportId || !session?.user?.id) return;
+    if (!assessmentId || !session?.user?.id) return;
 
     const isCompleted = completedActions.has(id);
     const nextCompleted = !isCompleted;
 
-    setActionProgressByReport((prev) => {
-      const existing = prev[reportId] ?? new Set<string>();
+    setActionProgressByAssessment((prev) => {
+      const existing = prev[assessmentId] ?? new Set<string>();
       const nextSet = new Set(existing);
 
       if (nextCompleted) {
@@ -524,7 +527,7 @@ function ReportLayout() {
         nextSet.delete(id);
       }
 
-      return { ...prev, [reportId]: nextSet };
+      return { ...prev, [assessmentId]: nextSet };
     });
     setProgressError('');
 
@@ -532,7 +535,7 @@ function ReportLayout() {
     const { error: upsertError } = await supabase.from('action_plan_progress').upsert(
       {
         user_id: session.user.id,
-        report_id: reportId,
+        report_id: assessmentId,
         action_id: id,
         completed: nextCompleted,
         updated_at: new Date().toISOString()
@@ -544,8 +547,8 @@ function ReportLayout() {
       console.error('Error saving action progress', upsertError);
       setProgressError('We could not save that change. Please try again.');
 
-      setActionProgressByReport((prev) => {
-        const existing = prev[reportId] ?? new Set<string>();
+      setActionProgressByAssessment((prev) => {
+        const existing = prev[assessmentId] ?? new Set<string>();
         const nextSet = new Set(existing);
 
         if (nextCompleted) {
@@ -554,7 +557,7 @@ function ReportLayout() {
           nextSet.add(id);
         }
 
-        return { ...prev, [reportId]: nextSet };
+        return { ...prev, [assessmentId]: nextSet };
       });
     }
   };
