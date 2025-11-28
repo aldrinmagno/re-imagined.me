@@ -15,11 +15,11 @@ function ReportPlan() {
         </p>
         {progressError ? <p className="text-sm text-amber-300">{progressError}</p> : null}
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-1">
         {actionPlanPhases.map((phase) => (
           <article
             key={phase.title}
-            className="flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm"
+            className="flex flex-col gap-3 rounded-xl shadow-sm"
           >
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.12em] text-slate-300">{phase.title}</p>

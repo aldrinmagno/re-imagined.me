@@ -10,11 +10,6 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Logout from './pages/Logout';
 import SampleReport from './pages/SampleReport';
-import PortalHome from './pages/portal/PortalHome';
-import Roadmap from './pages/portal/Roadmap';
-import Journal from './pages/portal/Journal';
-import Community from './pages/portal/Community';
-import Profile from './pages/portal/Profile';
 import ReportLayout from './components/report/ReportLayout';
 import ReportOverview from './pages/portal/report/ReportOverview';
 import ReportRoles from './pages/portal/report/ReportRoles';
@@ -46,7 +41,9 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
-          <Route path="/portal" element={<PortalHome />} />
+          <Route path="/portal" element={<ReportLayout />}>
+            <Route index element={<Navigate to="/portal/report/overview" replace />} />
+          </Route>
           <Route path="/portal/report" element={<ReportLayout />}>
             <Route index element={<Navigate to="/portal/report/overview" replace />} />
             <Route path="overview" element={<ReportOverview />} />
@@ -56,10 +53,6 @@ function App() {
             <Route path="resources" element={<ReportResources />} />
             <Route path="interview" element={<ReportInterview />} />
           </Route>
-          <Route path="/portal/roadmap" element={<Roadmap />} />
-          <Route path="/portal/journal" element={<Journal />} />
-          <Route path="/portal/community" element={<Community />} />
-          <Route path="/portal/profile" element={<Profile />} />
         </Route>
 
         <Route path="/report" element={<Navigate to="/report/overview" replace />} />

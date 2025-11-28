@@ -4,12 +4,7 @@ import Logo from './Logo';
 import { reportSectionLinks } from './report/ReportLayout';
 
 const portalLinks = [
-  { to: '/portal', label: 'Home' },
   { to: '/portal/report', label: 'Report', children: reportSectionLinks },
-  { to: '/portal/roadmap', label: 'Road map' },
-  { to: '/portal/journal', label: 'Journal' },
-  { to: '/portal/community', label: 'Community' },
-  { to: '/portal/profile', label: 'Profile' }
 ] as const;
 
 function PortalLayout() {
@@ -36,7 +31,7 @@ function PortalLayout() {
       </header>
 
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 lg:flex-row">
-        <nav className="flex flex-row gap-2 overflow-auto rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-sm lg:flex-col lg:gap-3">
+        <nav className="flex flex-row gap-2 overflow-auto text-sm lg:flex-col lg:gap-3">
           {portalLinks.map((link) => {
             const isReportLink = link.to === '/portal/report';
 
@@ -44,7 +39,6 @@ function PortalLayout() {
               <div key={link.to} className="flex flex-col gap-1">
                 <NavLink
                   to={link.to}
-                  end={link.to === '/portal'}
                   className={({ isActive }) =>
                     `rounded-xl px-4 py-2 font-medium transition ${
                       isActive ? 'bg-emerald-500/20 text-emerald-200' : 'text-slate-300 hover:text-white'
@@ -76,7 +70,7 @@ function PortalLayout() {
           })}
         </nav>
 
-        <section className="flex-1 rounded-3xl border border-slate-800 bg-slate-950/60 p-6 shadow-2xl shadow-emerald-500/5">
+        <section className="flex-1 shadow-2xl shadow-emerald-500/5">
           <Outlet />
         </section>
       </div>
