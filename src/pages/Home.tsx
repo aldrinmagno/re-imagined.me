@@ -5,6 +5,7 @@ import AssessmentPreviewPanel from '../components/AssessmentPreviewPanel';
 import { getSupabaseClient } from '../lib/supabaseClient';
 import { generateSnapshotInsights, persistSnapshotReport } from '../lib/generateSnapshotInsights';
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
+import type { Session } from '@supabase/supabase-js';
 import { useAuth } from '../context/AuthContext';
 import { jobTitles as fallbackJobTitles } from '../data/jobTitles';
 
@@ -50,7 +51,7 @@ const createInitialFormData = (): AssessmentFormData => ({
 });
 
 function Home() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [isAssessmentActive, setIsAssessmentActive] = useState(false);
   const [hasAssessmentStarted, setHasAssessmentStarted] = useState(false);
@@ -463,6 +464,8 @@ function Home() {
     setError('');
     setIsSubmitting(true);
 
+    let activeSession: Session | null = session ?? null;
+
     const yearsExperienceValue = Number.parseInt(formData.yearsExperience, 10);
     if (Number.isNaN(yearsExperienceValue) || yearsExperienceValue < 0) {
       setError('Please enter a valid number of years of experience.');
@@ -500,6 +503,8 @@ function Home() {
           setError('We could not sign you in after creating your account. Please try logging in and submitting again.');
           return;
         }
+
+        activeSession = signInResult.session;
       }
 
       const normalizedFormData: AssessmentFormData = {
@@ -549,21 +554,27 @@ function Home() {
 
       if (assessmentRecord?.id) {
         try {
-          const { data: sessionData } = await supabase.auth.getSession();
-
-          if (!sessionData.session) {
-            console.warn('Skipping report persistence because no active session is available.');
-          } else {
-            await persistSnapshotReport({
-              assessmentId: assessmentRecord.id,
-              formData: normalizedFormData,
-              goalText,
-              industryLabels,
-              insights
-            });
+          if (!activeSession) {
+            const { data: sessionData } = await supabase.auth.getSession();
+            activeSession = sessionData.session;
           }
+
+          if (!activeSession) {
+            setError('We could not confirm your session to save your report. Please sign in and try again.');
+            return;
+          }
+
+          await persistSnapshotReport({
+            assessmentId: assessmentRecord.id,
+            formData: normalizedFormData,
+            goalText,
+            industryLabels,
+            insights
+          });
         } catch (reportError) {
           console.error('Failed to populate report content tables', reportError);
+          setError('We saved your answers but could not store your report. Please try again.');
+          return;
         }
       }
 
