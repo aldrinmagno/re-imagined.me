@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseClient } from '../../lib/supabaseClient';
 import type { AssessmentFormData, SnapshotInsights } from '../../types/assessment';
@@ -77,7 +77,7 @@ const createFallbackFormData = (email: string | null): AssessmentFormData => ({
   password: ''
 });
 
-const sectionLinks = [
+export const reportSectionLinks = [
   { to: 'overview', label: 'Overview' },
   { to: 'roles', label: 'Roles' },
   { to: 'skills', label: 'Skills' },
@@ -304,22 +304,6 @@ function ReportLayout() {
           <h1 className="text-2xl font-bold text-white">Snapshot of where you are now</h1>
           <p className="text-sm text-slate-300">Latest assessment submitted on your account.</p>
         </header>
-
-        <nav className="flex flex-wrap gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-3 text-sm">
-          {sectionLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) =>
-                `rounded-xl px-3 py-2 font-semibold transition ${
-                  isActive ? 'bg-emerald-500/20 text-emerald-200' : 'text-slate-300 hover:text-white'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
 
         <Outlet />
       </div>
