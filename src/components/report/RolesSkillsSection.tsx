@@ -1,7 +1,7 @@
-import type { FutureRole, RoleSkillGroup } from '../../../types/report';
-import { useReportContext } from '../../../components/report/ReportLayout';
+import type { FutureRole, RoleSkillGroup } from '../../types/report';
+import { useReportContext } from './ReportLayout';
 
-type CombinedRole = FutureRole & { skills: string[]; skillSummary?: string | null };
+export type CombinedRole = FutureRole & { skills: string[]; skillSummary?: string | null };
 
 const RoleWithSkillsCard = ({ title, description, reasons, skills, skillSummary }: CombinedRole) => (
   <article className="flex h-full flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-sm">
@@ -83,13 +83,17 @@ const buildCombinedRoles = (futureRoles: FutureRole[], roleSkillGroups: RoleSkil
   return [...combined, ...unmatchedCards];
 };
 
-function ReportRoles() {
+interface RolesSkillsSectionProps {
+  className?: string;
+}
+
+function RolesSkillsSection({ className = '' }: RolesSkillsSectionProps) {
   const { reportContent } = useReportContext();
   const combinedRoles = buildCombinedRoles(reportContent.futureRoles, reportContent.roleSkillGroups);
 
   if (!combinedRoles.length) {
     return (
-      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+      <section className={`space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 ${className}`}>
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Future roles & skills</p>
           <h2 className="text-lg font-semibold text-white">Roles to explore based on your strengths</h2>
@@ -101,14 +105,13 @@ function ReportRoles() {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+    <section className={`space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 ${className}`}>
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">Future roles & skills</p>
           <h2 className="text-lg font-semibold text-white">Roles to explore with the skills to grow into them</h2>
           <p className="text-sm text-slate-300">
-            Each card pairs a suggested role with the most useful skills to practice next, so you can move forward with
-            confidence.
+            Each card pairs a suggested role with the most useful skills to practice next, so you can move forward with confidence.
           </p>
         </div>
       </div>
@@ -121,4 +124,4 @@ function ReportRoles() {
   );
 }
 
-export default ReportRoles;
+export default RolesSkillsSection;

@@ -1,3 +1,4 @@
+import RolesSkillsSection from '../../../components/report/RolesSkillsSection';
 import { useReportContext } from '../../../components/report/ReportLayout';
 
 function ReportOverview() {
@@ -51,6 +52,7 @@ function ReportOverview() {
           ) : null}
         </div>
       </section>
+      <RolesSkillsSection />
     </div>
   );
 }
