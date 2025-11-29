@@ -492,6 +492,38 @@ function Home() {
         }
       }
 
+      const serializedStrengths = JSON.stringify(strengthsWithOther ?? []);
+      const serializedLookingFor = JSON.stringify(lookingForSelections);
+      const transitionTarget =
+        lookingForSelections.includes('transition') && transitionTargetValue
+          ? transitionTargetValue
+          : null;
+
+      const { data: assessmentRows, error: submissionError } = await supabase
+        .from('assessment_responses')
+        .insert({
+          job_title: formData.jobTitle,
+          industry: formData.industry,
+          years_experience: yearsExperienceValue,
+          strengths: serializedStrengths,
+          typical_week: formData.typicalWeek || null,
+          looking_for: serializedLookingFor,
+          transition_target: transitionTarget,
+          work_preferences: formData.workPreferences || null,
+          email: formData.email.trim(),
+          full_name: formData.fullName || null,
+          submitted_at: new Date().toISOString(),
+          snapshot_insights: null
+        })
+        .select('id')
+        .single();
+
+      if (submissionError || !assessmentRows?.id) {
+        console.error('Failed to save assessment response', submissionError);
+        setError("We couldn't save your answers. Please try again.");
+        return;
+      }
+
       const insights = await generateSnapshotInsights({
         formData: {
           ...formData,
@@ -500,41 +532,23 @@ function Home() {
           transitionTarget: transitionTargetValue
         },
         goalText,
-        industryLabels
+        industryLabels,
+        assessmentId: assessmentRows.id
       });
 
-      const serializedStrengths = JSON.stringify(strengthsWithOther ?? []);
-      const serializedLookingFor = JSON.stringify(lookingForSelections);
-      const transitionTarget =
-        lookingForSelections.includes('transition') && transitionTargetValue
-          ? transitionTargetValue
-          : null;
+      const { error: snapshotUpdateError } = await supabase
+        .from('assessment_responses')
+        .update({ snapshot_insights: insights })
+        .eq('id', assessmentRows.id);
 
-      const { error: submissionError } = await supabase.from('assessment_responses').insert({
-        job_title: formData.jobTitle,
-        industry: formData.industry,
-        years_experience: yearsExperienceValue,
-        strengths: serializedStrengths,
-        typical_week: formData.typicalWeek || null,
-        looking_for: serializedLookingFor,
-        transition_target: transitionTarget,
-        work_preferences: formData.workPreferences || null,
-        email: formData.email.trim(),
-        full_name: formData.fullName || null,
-        submitted_at: new Date().toISOString(),
-        snapshot_insights: insights
-      });
-
-      if (submissionError) {
-        console.error('Failed to save assessment response', submissionError);
-        setError('We couldn\'t save your answers. Please try again.');
-        return;
+      if (snapshotUpdateError) {
+        console.error('Failed to attach snapshot insights', snapshotUpdateError);
       }
 
       setSnapshotInsights(insights);
     } catch (supabaseError) {
       console.error('Error saving assessment response', supabaseError);
-      setError('We\'re having trouble connecting right now. Please try again later.');
+      setError("We're having trouble connecting right now. Please try again later.");
       return;
     } finally {
       setIsSubmitting(false);

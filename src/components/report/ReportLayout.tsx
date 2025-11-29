@@ -193,7 +193,6 @@ function ReportLayout() {
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [reportId, setReportId] = useState<string | null>(null);
   const [actionProgressByAssessment, setActionProgressByAssessment] = useState<Record<string, Set<string>>>({});
   const [progressError, setProgressError] = useState('');
   const [reportContent, setReportContent] = useState<ReportContent>(createEmptyReportContent());
@@ -355,7 +354,10 @@ function ReportLayout() {
     }
 
     setReportContent({
-      futureRoles: orderedRoles.map(({ ordering, ...rest }) => rest),
+      futureRoles: orderedRoles.map(({ ordering, reasons, ...rest }) => ({
+        ...rest,
+        reasons: Array.isArray(reasons) ? reasons.filter(Boolean) : []
+      })),
       roleSkillGroups: Object.values(groupedSkills)
         .sort((a, b) => a.order - b.order)
         .map(({ order, ...rest }) => rest),
@@ -403,7 +405,6 @@ function ReportLayout() {
       if (!data) {
         setAssessment(createFallbackFormData(session.user.email));
         setAssessmentId(null);
-        setReportId(null);
         setReportContent(createEmptyReportContent());
         setLoading(false);
         return;
@@ -447,13 +448,11 @@ function ReportLayout() {
       }
 
       if (!reportData) {
-        setReportId(null);
         setReportContent(createEmptyReportContent());
         setLoading(false);
         return;
       }
 
-      setReportId(reportData.id);
       await loadReportContent(reportData);
       setLoading(false);
     };
