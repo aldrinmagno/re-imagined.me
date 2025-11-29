@@ -1,9 +1,13 @@
+import { getSupabaseClient } from './supabaseClient';
 import type { AssessmentFormData, SnapshotInsights } from '../types/assessment';
+import type { GeneratedSnapshot } from '../types/generatedSnapshot';
+import { validateGeneratedSnapshot } from '../types/generatedSnapshot';
 
 interface SnapshotInput {
   formData: AssessmentFormData;
   goalText: string;
   industryLabels?: string[];
+  assessmentId?: string;
 }
 
 const fallbackFutureRoles: SnapshotInsights['futureRoles'] = [
@@ -87,9 +91,6 @@ const fallbackInterviewTalkingPoints: SnapshotInsights['interviewTalkingPoints']
   'Share a story where you turned feedback into a repeatable playbook.'
 ];
 
-const formatIndustries = (industries?: string[]) =>
-  industries && industries.length > 0 ? industries.join(', ') : null;
-
 const formatStrengths = (strengths?: string[]) =>
   strengths && strengths.length > 0 ? strengths.join(', ') : null;
 
@@ -111,6 +112,11 @@ const normalizeLookingFor = (value: AssessmentFormData['lookingFor']) => {
   return [];
 };
 
+const safeRandomId = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `act_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
 const buildStructuredSignals = (input: SnapshotInput) => {
   const trimmedOther = input.formData.strengthsOther?.trim();
 
@@ -121,174 +127,344 @@ const buildStructuredSignals = (input: SnapshotInput) => {
     lookingFor: normalizeLookingFor(input.formData.lookingFor),
     transitionTarget: input.formData.transitionTarget?.trim() || null,
     strengths: input.formData.strengths ?? [],
-    strengthsOther: trimmedOther ? trimmedOther : null,
+    strengthsOther: trimmedOther || null,
+    typicalWeek: input.formData.typicalWeek || null,
     workPreferences: input.formData.workPreferences || null,
-    typicalWeek: input.formData.typicalWeek || null
+    goalText: input.goalText
   };
 };
 
-const createFallbackInsights = ({
-  formData,
-  goalText,
-  industryLabels
-}: SnapshotInput): SnapshotInsights => {
-  const industryText = formatIndustries(industryLabels) ?? 'your space';
-  const strengthsText = formatStrengths(formData.strengths) ?? 'core capabilities';
+const createFallbackGeneratedSnapshot = (input: SnapshotInput): GeneratedSnapshot => {
+  const jobTitle = input.formData.jobTitle || 'your role';
+  const strengthsText = formatStrengths(input.formData.strengths) ?? 'your strengths';
+
+  const roleSkills = new Map<string, string[]>(fallbackSkillsByRole.map((entry) => [entry.role, entry.skills]));
 
   return {
-    workEvolution:
-      `Expect the ${formData.jobTitle || 'role'} in ${industryText} to lean more on judgement, partner communication, and orchestration as automation absorbs the repetitive pieces of your workflow.`,
-    futureDirections:
-      `Blend your strengths in ${strengthsText} with ${goalText} to explore adjacent roles that translate your domain knowledge into higher-leverage work.`,
-    nextSteps:
-      'Focus your next 90 days on clarifying outcomes, upskilling in AI-enabled tooling, and piloting a project that showcases how you solve emerging problems.',
-    futureRoles: fallbackFutureRoles,
-    skillsByRole: fallbackSkillsByRole,
-    actionPlan: fallbackActionPlan,
-    learningResources: fallbackLearningResources,
-    interviewTalkingPoints: fallbackInterviewTalkingPoints
+    reportTitle: `${jobTitle} — 90-day roadmap`,
+    reportSummary:
+      'You are positioned to translate your current momentum into higher-leverage work by combining your strengths with targeted automation and customer-facing experiments.',
+    strengthsSnapshot: {
+      summary: `You bring ${strengthsText} to the table and can amplify that with structured delivery and communication.`,
+      themes: sanitizeStringArray(input.formData.strengths),
+      workStyle: ['Pragmatic delivery', 'Cross-functional collaboration', 'Change resilience']
+    },
+    whereYouAre: {
+      summary:
+        input.formData.typicalWeek ||
+        'You juggle project coordination, stakeholder communication, and ad-hoc problem solving in a changing environment.',
+      highlights: [
+        'Able to keep partners aligned while work evolves',
+        'Translates goals into weekly rituals',
+        'Curious about applying AI to streamline repetitive steps'
+      ]
+    },
+    headlineSuggestion: `${jobTitle} translating ambiguity into action`,
+    interviewOverview:
+      'Describe how you pair structured delivery with curiosity for new tools to create measurable improvements for teams.',
+    linkedinHeadline: `${jobTitle} | turning playbooks into AI-augmented delivery`,
+    futureRoles: fallbackFutureRoles.map((role) => ({
+      title: role.title,
+      description: `${role.title} that keeps you close to stakeholders while testing AI-augmented workflows.`,
+      reasons: role.reasons,
+      skills: (roleSkills.get(role.title) || ['Communication']).map((skill) => ({
+        name: skill,
+        summary: `${skill} applied to ${role.title.toLowerCase()}.`,
+        category: 'Core capability'
+      })),
+      plan: fallbackActionPlan.map((phase, index) => ({
+        monthLabel: `Month ${index + 1}`,
+        title: phase.phase,
+        description: 'Targeted actions to make measurable progress.',
+        actions: phase.items.map((item) => ({
+          label: item,
+          timePerWeek: '1-2 hrs/week'
+        }))
+      })),
+      learningResources: fallbackLearningResources.map((resource) => ({
+        title: resource.label,
+        description: 'Starter resource to unblock progress.',
+        url: resource.href,
+        tags: []
+      }))
+    })),
+    generalLearningResources: fallbackLearningResources.map((resource) => ({
+      title: resource.label,
+      description: 'Practical support for your roadmap.',
+      url: resource.href,
+      tags: []
+    })),
+    interview: {
+      headline: `${jobTitle} ready to prototype AI-assisted workflows`,
+      howToDescribe:
+        'Position yourself as someone who translates change into clear rituals, combining stakeholder empathy with lightweight automation tests.',
+      talkingPoints: fallbackInterviewTalkingPoints,
+      linkedinHeadline: `${jobTitle} | ${input.goalText}`
+    }
   };
 };
 
-const parseFutureRoles = (value: unknown): SnapshotInsights['futureRoles'] => {
-  if (!Array.isArray(value)) return [];
+const mapGeneratedToSnapshotInsights = (snapshot: GeneratedSnapshot): SnapshotInsights => {
+  const primaryRole = snapshot.futureRoles[0];
 
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') return null;
-      const title = typeof (entry as { title?: unknown }).title === 'string' ? entry.title.trim() : '';
-      const reasons = sanitizeStringArray((entry as { reasons?: unknown }).reasons);
+  const mappedActionPlan = primaryRole.plan.map((phase) => ({
+    phase: `${phase.monthLabel} — ${phase.title}`,
+    items: phase.actions.map((action) => `${action.label} (${action.timePerWeek})`)
+  }));
 
-      if (!title || reasons.length === 0) return null;
+  const learningResources = snapshot.generalLearningResources.length > 0
+    ? snapshot.generalLearningResources
+    : primaryRole.learningResources;
 
-      return { title, reasons };
-    })
-    .filter(Boolean) as SnapshotInsights['futureRoles'];
+  return {
+    workEvolution: snapshot.whereYouAre.summary,
+    futureDirections: snapshot.reportSummary,
+    nextSteps: snapshot.interviewOverview,
+    futureRoles: snapshot.futureRoles.map((role) => ({
+      title: role.title,
+      reasons: role.reasons
+    })),
+    skillsByRole: snapshot.futureRoles.map((role) => ({
+      role: role.title,
+      skills: role.skills.map((skill) => skill.name)
+    })),
+    actionPlan: mappedActionPlan,
+    learningResources: learningResources.map((resource) => ({
+      label: resource.title,
+      href: resource.url || '#'
+    })),
+    interviewTalkingPoints: snapshot.interview.talkingPoints
+  };
 };
 
-const parseSkillsByRole = (value: unknown): SnapshotInsights['skillsByRole'] => {
-  if (!Array.isArray(value)) return [];
+const persistGeneratedSnapshot = async (
+  snapshot: GeneratedSnapshot,
+  assessmentId: string,
+  goalText: string
+) => {
+  const supabase = getSupabaseClient();
 
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') return null;
-      const role = typeof (entry as { role?: unknown }).role === 'string' ? entry.role.trim() : '';
-      const skills = sanitizeStringArray((entry as { skills?: unknown }).skills);
-
-      if (!role || skills.length === 0) return null;
-
-      return { role, skills };
+  const { data: reportRow, error: reportError } = await supabase
+    .from('reports')
+    .insert({
+      assessment_id: assessmentId,
+      title: snapshot.reportTitle,
+      summary: snapshot.reportSummary,
+      strengths_snapshot: snapshot.strengthsSnapshot,
+      where_you_are: snapshot.whereYouAre,
+      goal_text: goalText,
+      headline_suggestion: snapshot.linkedinHeadline || snapshot.headlineSuggestion,
+      interview_overview: snapshot.interviewOverview,
+      status: 'draft'
     })
-    .filter(Boolean) as SnapshotInsights['skillsByRole'];
-};
+    .select('id')
+    .single();
 
-const parseActionPlan = (value: unknown): SnapshotInsights['actionPlan'] => {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') return null;
-      const phase = typeof (entry as { phase?: unknown }).phase === 'string' ? entry.phase.trim() : '';
-      const items = sanitizeStringArray((entry as { items?: unknown }).items);
-
-      if (!phase || items.length === 0) return null;
-
-      return { phase, items };
-    })
-    .filter(Boolean) as SnapshotInsights['actionPlan'];
-};
-
-const parseLearningResources = (value: unknown): SnapshotInsights['learningResources'] => {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .map((entry) => {
-      if (!entry || typeof entry !== 'object') return null;
-      const label = typeof (entry as { label?: unknown }).label === 'string' ? entry.label.trim() : '';
-      const href = typeof (entry as { href?: unknown }).href === 'string' ? entry.href.trim() : '';
-
-      if (!label) return null;
-
-      return { label, href: href || '#' };
-    })
-    .filter(Boolean) as SnapshotInsights['learningResources'];
-};
-
-const parseInsightsFromContent = (content: string, fallback: SnapshotInsights): SnapshotInsights | null => {
-  if (!content) {
-    return null;
+  if (reportError || !reportRow?.id) {
+    throw new Error(reportError?.message || 'Unable to create report record');
   }
+
+  const reportId = reportRow.id as string;
+
+  try {
+    for (const [roleIndex, role] of snapshot.futureRoles.entries()) {
+      const { data: futureRoleRow, error: futureRoleError } = await supabase
+        .from('future_roles')
+        .insert({
+          report_id: reportId,
+          title: role.title,
+          description: role.description,
+          reasons: role.reasons,
+          ordering: roleIndex
+        })
+        .select('id')
+        .single();
+
+      if (futureRoleError || !futureRoleRow?.id) {
+        throw new Error(futureRoleError?.message || 'Unable to create future role');
+      }
+
+      const futureRoleId = futureRoleRow.id as string;
+
+      if (role.skills?.length) {
+        const skillPayload = role.skills.map((skill, index) => ({
+          report_id: reportId,
+          future_role_id: futureRoleId,
+          skill_name: skill.name,
+          skill_summary: skill.summary,
+          category: skill.category,
+          ordering: index
+        }));
+
+        const { error: skillsError } = await supabase.from('skills_to_build').insert(skillPayload);
+        if (skillsError) {
+          throw new Error(skillsError.message);
+        }
+      }
+
+      for (const [phaseIndex, phase] of role.plan.entries()) {
+        const { data: phaseRow, error: phaseError } = await supabase
+          .from('ninety_day_plan_phases')
+          .insert({
+            report_id: reportId,
+            future_role_id: futureRoleId,
+            month_label: phase.monthLabel,
+            title: phase.title,
+            description: phase.description,
+            position: phaseIndex
+          })
+          .select('id')
+          .single();
+
+        if (phaseError || !phaseRow?.id) {
+          throw new Error(phaseError?.message || 'Unable to create plan phase');
+        }
+
+        const phaseId = phaseRow.id as string;
+
+        if (phase.actions?.length) {
+          const actionPayload = phase.actions.map((action, index) => ({
+            id: safeRandomId(),
+            report_id: reportId,
+            phase_id: phaseId,
+            future_role_id: futureRoleId,
+            label: action.label,
+            time_per_week: action.timePerWeek,
+            position: index
+          }));
+
+          const { error: actionsError } = await supabase.from('plan_actions').insert(actionPayload);
+          if (actionsError) {
+            throw new Error(actionsError.message);
+          }
+        }
+      }
+
+      if (role.learningResources?.length) {
+        const resourcesPayload = role.learningResources.map((resource, index) => ({
+          report_id: reportId,
+          future_role_id: futureRoleId,
+          title: resource.title,
+          description: resource.description,
+          url: resource.url,
+          tags: resource.tags ?? [],
+          position: index
+        }));
+
+        const { error: resourcesError } = await supabase.from('learning_resources').insert(resourcesPayload);
+        if (resourcesError) {
+          throw new Error(resourcesError.message);
+        }
+      }
+    }
+
+    if (snapshot.generalLearningResources?.length) {
+      const generalResourcesPayload = snapshot.generalLearningResources.map((resource, index) => ({
+        report_id: reportId,
+        title: resource.title,
+        description: resource.description,
+        url: resource.url,
+        tags: resource.tags ?? [],
+        position: index
+      }));
+
+      const { error: resourcesError } = await supabase.from('learning_resources').insert(generalResourcesPayload);
+      if (resourcesError) {
+        throw new Error(resourcesError.message);
+      }
+    }
+
+    const { error: interviewError } = await supabase.from('interview_data').insert({
+      report_id: reportId,
+      headline: snapshot.interview.headline || snapshot.headlineSuggestion,
+      how_to_describe: snapshot.interview.howToDescribe || snapshot.interviewOverview,
+      talking_points: snapshot.interview.talkingPoints
+    });
+
+    if (interviewError) {
+      throw new Error(interviewError.message);
+    }
+  } catch (error) {
+    await supabase.from('reports').delete().eq('id', reportId);
+    throw error;
+  }
+};
+
+const parseGeneratedSnapshot = (content: string | null, fallback: GeneratedSnapshot): GeneratedSnapshot => {
+  if (!content) return fallback;
 
   try {
     const parsed = JSON.parse(content.trim());
-
-    if (!parsed || typeof parsed !== 'object') {
-      return null;
+    if (validateGeneratedSnapshot(parsed)) {
+      return parsed;
     }
 
-    const insights: Partial<SnapshotInsights> = {};
-
-    if (typeof (parsed as { workEvolution?: unknown }).workEvolution === 'string') {
-      insights.workEvolution = (parsed as { workEvolution: string }).workEvolution.trim();
-    }
-    if (typeof (parsed as { futureDirections?: unknown }).futureDirections === 'string') {
-      insights.futureDirections = (parsed as { futureDirections: string }).futureDirections.trim();
-    }
-    if (typeof (parsed as { nextSteps?: unknown }).nextSteps === 'string') {
-      insights.nextSteps = (parsed as { nextSteps: string }).nextSteps.trim();
-    }
-
-    const futureRoles = parseFutureRoles((parsed as { futureRoles?: unknown }).futureRoles);
-    if (futureRoles.length > 0) {
-      insights.futureRoles = futureRoles;
-    }
-
-    const skillsByRole = parseSkillsByRole((parsed as { skillsByRole?: unknown }).skillsByRole);
-    if (skillsByRole.length > 0) {
-      insights.skillsByRole = skillsByRole;
-    }
-
-    const actionPlan = parseActionPlan((parsed as { actionPlan?: unknown }).actionPlan);
-    if (actionPlan.length > 0) {
-      insights.actionPlan = actionPlan;
-    }
-
-    const learningResources = parseLearningResources((parsed as { learningResources?: unknown }).learningResources);
-    if (learningResources.length > 0) {
-      insights.learningResources = learningResources;
-    }
-
-    const interviewTalkingPoints = sanitizeStringArray(
-      (parsed as { interviewTalkingPoints?: unknown }).interviewTalkingPoints
-    );
-    if (interviewTalkingPoints.length > 0) {
-      insights.interviewTalkingPoints = interviewTalkingPoints;
-    }
-
-    if (Object.keys(insights).length === 0) {
-      return null;
-    }
-
-    return {
-      ...fallback,
-      ...insights
-    };
+    console.warn('Snapshot response failed validation; using fallback');
+    return fallback;
   } catch (error) {
     console.warn('Failed to parse snapshot insights JSON', error);
+    return fallback;
   }
-
-  return null;
 };
+
+const buildSchemaDescription = () => `
+Return only valid JSON (no markdown) matching this shape:
+{
+  "reportTitle": string,
+  "reportSummary": string,
+  "strengthsSnapshot": { "summary": string, "themes": string[], "workStyle": string[] },
+  "whereYouAre": { "summary": string, "highlights": string[] },
+  "headlineSuggestion": string,
+  "interviewOverview": string,
+  "linkedinHeadline": string,
+  "futureRoles": [
+    {
+      "title": string,
+      "description": string,
+      "reasons": string[],
+      "skills": [{ "name": string, "summary": string, "category": string }],
+      "plan": [{
+        "monthLabel": string,
+        "title": string,
+        "description": string,
+        "actions": [{ "label": string, "timePerWeek": string }]
+      }],
+      "learningResources": [{ "title": string, "description": string, "url": string, "tags": string[] }]
+    }
+  ],
+  "generalLearningResources": [{ "title": string, "description": string, "url": string, "tags": string[] }],
+  "interview": {
+    "headline": string,
+    "howToDescribe": string,
+    "talkingPoints": string[],
+    "linkedinHeadline": string
+  }
+}
+- Provide 3-5 futureRoles, each with at least 2 reasons, 3 skills, 3 phases, and 3 actions per phase.
+- Include 3-5 total learning resources (mix of role-specific and general) with urls.
+- Keep summaries concise and factual.
+- Do not include any extra keys.
+`;
 
 export const generateSnapshotInsights = async (input: SnapshotInput): Promise<SnapshotInsights> => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   const structuredSignals = buildStructuredSignals(input);
-  const fallbackInsights = createFallbackInsights(input);
+  const fallbackGenerated = createFallbackGeneratedSnapshot(input);
 
   if (!apiKey) {
     console.warn('Missing OpenAI API key; using fallback snapshot insights.');
-    return fallbackInsights;
+    if (input.assessmentId) {
+      try {
+        await persistGeneratedSnapshot(fallbackGenerated, input.assessmentId, input.goalText);
+      } catch (error) {
+        console.error('Error persisting fallback snapshot', error);
+      }
+    }
+    return mapGeneratedToSnapshotInsights(fallbackGenerated);
   }
+
+  const schemaDescription = buildSchemaDescription();
+  let generatedSnapshot = fallbackGenerated;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -298,31 +474,22 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.1',
         temperature: 0.3,
+        response_format: { type: 'json_object' },
         messages: [
           {
             role: 'system',
             content:
-              'You are a concise career strategist. Return JSON only with keys workEvolution, futureDirections, nextSteps, futureRoles, skillsByRole, actionPlan, learningResources, interviewTalkingPoints. Keep workEvolution, futureDirections, and nextSteps under 60 words each. For futureRoles provide 3 objects with title and 2 short reasons. skillsByRole should map to each role with 3 skills. actionPlan should include 3 phases with 3 bullet items each. Provide 4 learningResources with label and href, and 5 interviewTalkingPoints as concise bullet strings.'
+              'You are a concise career strategist helping re-imagined.me transform assessments into structured career roadmaps. Respond with JSON only.'
           },
           {
             role: 'user',
-            content: `Structured signals for analytics and recommendations: ${JSON.stringify(structuredSignals)}`
+            content: `Assessment context: ${JSON.stringify(structuredSignals, null, 2)}`
           },
           {
             role: 'user',
-            content: `Create a short snapshot for someone currently working as ${input.formData.jobTitle || 'a professional'} in ${
-              formatIndustries(input.industryLabels) ?? 'their industry'
-            }. They are looking to ${input.goalText}${
-              input.formData.transitionTarget?.trim()
-                ? `. They want to transition into ${input.formData.transitionTarget.trim()}`
-                : ''
-            }. Their key strengths are ${
-              formatStrengths(input.formData.strengths) ?? 'not specified'
-            } and their work preferences include ${
-              input.formData.workPreferences || 'not specified'
-            }. Include nods to how their typical work may evolve (${input.formData.typicalWeek || 'no rhythm provided'}).`
+            content: `Follow this schema strictly and ensure every required field is populated: ${schemaDescription}`
           }
         ]
       })
@@ -333,16 +500,20 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
     }
 
     const data = await response.json();
-    const aiContent = data?.choices?.[0]?.message?.content;
-    const parsed = parseInsightsFromContent(aiContent, fallbackInsights);
-
-    if (parsed) {
-      return parsed;
-    }
-
-    return fallbackInsights;
+    const aiContent = data?.choices?.[0]?.message?.content ?? null;
+    generatedSnapshot = parseGeneratedSnapshot(aiContent, fallbackGenerated);
   } catch (error) {
     console.error('Error generating snapshot insights', error);
-    return fallbackInsights;
+    generatedSnapshot = fallbackGenerated;
   }
+
+  if (input.assessmentId) {
+    try {
+      await persistGeneratedSnapshot(generatedSnapshot, input.assessmentId, input.goalText);
+    } catch (error) {
+      console.error('Error saving generated snapshot to Supabase', error);
+    }
+  }
+
+  return mapGeneratedToSnapshotInsights(generatedSnapshot);
 };
