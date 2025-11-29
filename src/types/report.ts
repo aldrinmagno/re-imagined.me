@@ -16,6 +16,7 @@ export interface ActionItem {
   id: string;
   title: string;
   estimate?: string | null;
+  futureRoleId?: string | null;
 }
 
 export interface ActionPhase {
@@ -23,6 +24,7 @@ export interface ActionPhase {
   title: string;
   monthLabel?: string | null;
   description?: string | null;
+  futureRoleId?: string | null;
   items: ActionItem[];
 }
 
@@ -32,6 +34,7 @@ export interface LearningResource {
   description?: string | null;
   link: string;
   supports?: string | null;
+  futureRoleId?: string | null;
 }
 
 export interface InterviewContent {

@@ -1,15 +1,26 @@
 import { useReportContext } from '../../../components/report/ReportLayout';
 
 function ReportPlan() {
-  const { completedActions, toggleAction, progressError, reportContent } = useReportContext();
+  const { completedActions, toggleAction, progressError, reportContent, selectedRoleId } = useReportContext();
 
-  if (!reportContent.actionPlanPhases.length) {
+  const selectedRole = reportContent.futureRoles.find((role) => role.id === selectedRoleId) || null;
+  const filteredPhases = selectedRoleId
+    ? reportContent.actionPlanPhases.filter(
+        (phase) => !phase.futureRoleId || phase.futureRoleId === selectedRoleId
+      )
+    : reportContent.actionPlanPhases;
+
+  if (!filteredPhases.length) {
     return (
       <section className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.12em] text-emerald-300">90-day action plan</p>
           <h2 className="text-lg font-semibold text-white">A calm, paced plan across three months</h2>
-          <p className="text-sm text-slate-300">Your personalised plan will appear here once your report has been generated.</p>
+          <p className="text-sm text-slate-300">
+            {selectedRole
+              ? 'There are no plan items for this role yet. Try selecting a different role from your overview.'
+              : 'Your personalised plan will appear here once your report has been generated.'}
+          </p>
           {progressError ? <p className="text-sm text-amber-300">{progressError}</p> : null}
         </div>
         <p className="text-sm text-slate-300">No plan items available yet.</p>
@@ -26,10 +37,15 @@ function ReportPlan() {
           Use the checkboxes to mark progress. Each action includes a light weekly time signal so you can fit it in alongside
           work and life.
         </p>
+        <p className="text-sm text-slate-300">
+          {selectedRole
+            ? `Focusing on: ${selectedRole.title}. You can switch roles from the Future roles & skills section.`
+            : 'Showing plan items across all suggested roles. Pick one to focus the plan.'}
+        </p>
         {progressError ? <p className="text-sm text-amber-300">{progressError}</p> : null}
       </div>
       <div className="grid gap-4 md:grid-cols-1">
-        {reportContent.actionPlanPhases.map((phase) => (
+        {filteredPhases.map((phase) => (
           <article
             key={phase.id}
             className="flex flex-col gap-3 rounded-xl shadow-sm"
