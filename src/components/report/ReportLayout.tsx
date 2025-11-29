@@ -159,8 +159,7 @@ const createFallbackFormData = (email: string | null): AssessmentFormData => ({
 
 export const reportSectionLinks = [
   { to: 'overview', label: 'Overview' },
-  { to: 'roles', label: 'Roles' },
-  { to: 'skills', label: 'Skills' },
+  { to: 'roles', label: 'Roles & skills' },
   { to: 'plan', label: 'Plan' },
   { to: 'resources', label: 'Resources' },
   { to: 'interview', label: 'Interview' }
@@ -354,13 +353,23 @@ function ReportLayout() {
     }
 
     setReportContent({
-      futureRoles: orderedRoles.map(({ ordering, reasons, ...rest }) => ({
-        ...rest,
-        reasons: Array.isArray(reasons) ? reasons.filter(Boolean) : []
-      })),
+      futureRoles: orderedRoles.map((role) => {
+        const { ordering, reasons, ...rest } = role;
+        void ordering;
+
+        return {
+          ...rest,
+          reasons: Array.isArray(reasons) ? reasons.filter(Boolean) : []
+        };
+      }),
       roleSkillGroups: Object.values(groupedSkills)
         .sort((a, b) => a.order - b.order)
-        .map(({ order, ...rest }) => rest),
+        .map((group) => {
+          const { order, ...rest } = group;
+          void order;
+
+          return rest;
+        }),
       actionPlanPhases,
       learningResources,
       interview
