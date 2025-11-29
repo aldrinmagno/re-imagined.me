@@ -62,6 +62,7 @@ interface PlanPhaseRecord {
   title: string;
   description: string | null;
   position: number | null;
+  future_role_id: string | null;
 }
 
 interface PlanActionRecord {
@@ -70,6 +71,7 @@ interface PlanActionRecord {
   label: string;
   time_per_week: string | null;
   position: number | null;
+  future_role_id: string | null;
 }
 
 interface LearningResourceRecord {
@@ -79,6 +81,7 @@ interface LearningResourceRecord {
   url: string;
   tags: string[] | null;
   position: number | null;
+  future_role_id: string | null;
 }
 
 interface InterviewRecord {
@@ -171,6 +174,8 @@ type ReportContextValue = {
   toggleAction: (id: string) => Promise<void>;
   progressError: string;
   reportContent: ReportContent;
+  selectedRoleId: string | null;
+  setSelectedRoleId: (roleId: string | null) => void;
 };
 
 const ReportContext = createContext<ReportContextValue | undefined>(undefined);
@@ -195,6 +200,7 @@ function ReportLayout() {
   const [progressError, setProgressError] = useState('');
   const [reportContent, setReportContent] = useState<ReportContent>(createEmptyReportContent());
   const [contentError, setContentError] = useState('');
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
 
   const loadReportContent = async (report: ReportRecord) => {
     const supabase = getSupabaseClient();
@@ -214,17 +220,17 @@ function ReportLayout() {
           .order('ordering', { ascending: true }),
         supabase
           .from('ninety_day_plan_phases')
-          .select('id, month_label, title, description, position')
+          .select('id, month_label, title, description, position, future_role_id')
           .eq('report_id', report.id)
           .order('position', { ascending: true }),
         supabase
           .from('plan_actions')
-          .select('id, phase_id, label, time_per_week, position')
+          .select('id, phase_id, label, time_per_week, position, future_role_id')
           .eq('report_id', report.id)
           .order('position', { ascending: true }),
         supabase
           .from('learning_resources')
-          .select('id, title, description, url, tags, position')
+          .select('id, title, description, url, tags, position, future_role_id')
           .eq('report_id', report.id)
           .order('position', { ascending: true }),
         supabase
@@ -312,7 +318,8 @@ function ReportLayout() {
         .map((action) => ({
           id: action.id,
           title: action.label,
-          estimate: action.time_per_week
+          estimate: action.time_per_week,
+          futureRoleId: action.future_role_id
         }));
 
       return {
@@ -320,6 +327,7 @@ function ReportLayout() {
         title,
         monthLabel: phase.month_label,
         description: phase.description,
+        futureRoleId: phase.future_role_id,
         items
       };
     });
@@ -330,7 +338,8 @@ function ReportLayout() {
         title: resource.title,
         description: resource.description,
         link: resource.url,
-        supports: Array.isArray(resource.tags) ? resource.tags.filter(Boolean).join(', ') : null
+        supports: Array.isArray(resource.tags) ? resource.tags.filter(Boolean).join(', ') : null,
+        futureRoleId: resource.future_role_id
       })
     );
 
@@ -373,6 +382,7 @@ function ReportLayout() {
       learningResources,
       interview
     });
+    setSelectedRoleId((current) => current && roleLookup.has(current) ? current : null);
   };
 
   useEffect(() => {
@@ -582,7 +592,18 @@ function ReportLayout() {
   }
 
   return (
-    <ReportContext.Provider value={{ assessment, goalText, completedActions, toggleAction, progressError, reportContent }}>
+    <ReportContext.Provider
+      value={{
+        assessment,
+        goalText,
+        completedActions,
+        toggleAction,
+        progressError,
+        reportContent,
+        selectedRoleId,
+        setSelectedRoleId
+      }}
+    >
       <div className="space-y-6 text-slate-100">
         <header className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Your personalised report</p>
