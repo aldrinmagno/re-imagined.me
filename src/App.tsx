@@ -12,7 +12,6 @@ import Logout from './pages/Logout';
 import SampleReport from './pages/SampleReport';
 import ReportLayout from './components/report/ReportLayout';
 import ReportOverview from './pages/portal/report/ReportOverview';
-import ReportRoles from './pages/portal/report/ReportRoles';
 import ReportPlan from './pages/portal/report/ReportPlan';
 import ReportResources from './pages/portal/report/ReportResources';
 import ReportInterview from './pages/portal/report/ReportInterview';
@@ -46,8 +45,8 @@ function App() {
           <Route path="/portal/report" element={<ReportLayout />}>
             <Route index element={<Navigate to="/portal/report/overview" replace />} />
             <Route path="overview" element={<ReportOverview />} />
-            <Route path="roles" element={<ReportRoles />} />
-            <Route path="skills" element={<Navigate to="/portal/report/roles" replace />} />
+            <Route path="roles" element={<Navigate to="/portal/report/overview" replace />} />
+            <Route path="skills" element={<Navigate to="/portal/report/overview" replace />} />
             <Route path="plan" element={<ReportPlan />} />
             <Route path="resources" element={<ReportResources />} />
             <Route path="interview" element={<ReportInterview />} />
