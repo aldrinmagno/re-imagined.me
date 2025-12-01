@@ -623,6 +623,22 @@ function Home() {
           : 'relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900'
       }`}
     >
+      {isSubmitting && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm"
+          role="status"
+          aria-live="assertive"
+        >
+          <div className="flex items-center gap-4 rounded-2xl bg-white px-6 py-5 shadow-2xl ring-1 ring-slate-200">
+            <div className="h-12 w-12 animate-spin rounded-full border-[4px] border-emerald-200 border-t-emerald-500" />
+            <div className="space-y-1">
+              <p className="text-base font-semibold text-slate-900">Generating your report…</p>
+              <p className="text-sm text-slate-600">We’re turning your answers into a personalised 90-day plan.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!isAssessmentMode && (
         <>
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
