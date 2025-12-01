@@ -441,7 +441,7 @@ Return only valid JSON (no markdown) matching this shape:
   }
 }
 - Provide 3-5 futureRoles, each with at least 2 reasons, 3 skills, 3 phases, and 3 actions per phase.
-- Include 3-5 total learning resources (mix of role-specific and general) with urls.
+- Include 8-12 total learning resources (mix of role-specific and general) with urls for each futureRoles.
 - Keep summaries concise and factual.
 - Do not include any extra keys.
 `;
@@ -481,7 +481,12 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
           {
             role: 'system',
             content:
-              'You are a concise career strategist helping re-imagined.me transform assessments into structured career roadmaps. Respond with JSON only.'
+              `You are a Workforce Reinvention and Skills Ecosystem Designer for re-imagined.me. Using the user’s assessment, design structured, future-proof career roadmaps that emphasise: 
+                - Emerging and not-yet-mainstream roles Hybrid
+                - multidisciplinary and AI-augmented careers Transferable skills that stay valuable 5–10+ years from now For each roadmap
+                - prioritise resilience to automation, adaptability, and optionality (multiple paths, not just one job title). 
+                - Avoid generic or conventional career suggestions unless they clearly support a future-oriented path
+                Respond with JSON only.`
           },
           {
             role: 'user',
