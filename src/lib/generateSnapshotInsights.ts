@@ -440,7 +440,7 @@ Return only valid JSON (no markdown) matching this shape:
     "linkedinHeadline": string
   }
 }
-- Provide 3-5 futureRoles, each with at least 2 reasons, 3 skills, 3 phases, and 3 actions per phase.
+- Provide 2-3 futureRoles, each with at least 2 reasons, 3 skills, 3 phases, and 3 actions per phase.
 - Include 8-12 total learning resources (mix of role-specific and general) with urls for each futureRoles.
 - Keep summaries concise and factual.
 - Do not include any extra keys.
