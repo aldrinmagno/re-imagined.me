@@ -201,20 +201,16 @@ function ReportLayout() {
     : 'Latest assessment submitted on your account.';
   const [assessment, setAssessment] = useState<AssessmentFormData | null>(null);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
+  const [reportId, setReportId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionProgressByAssessment, setActionProgressByAssessment] = useState<Record<string, Set<string>>>({});
   const [progressError, setProgressError] = useState('');
   const [reportContent, setReportContent] = useState<ReportContent>(createEmptyReportContent());
   const [contentError, setContentError] = useState('');
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [selectedRoleId, setSelectedRoleIdState] = useState<string | null>(null);
   const hasLoadedSelectedRole = useRef(false);
-
-  const selectedRoleStorageKey = useMemo(() => {
-    if (!session?.user?.id || !assessmentId) return null;
-
-    return `report:selectedRole:${session.user.id}:${assessmentId}`;
-  }, [assessmentId, session?.user?.id]);
+  const availableRoleIds = useRef<Set<string>>(new Set());
 
   const loadReportContent = async (report: ReportRecord) => {
     const supabase = getSupabaseClient();
@@ -268,6 +264,8 @@ function ReportLayout() {
       console.error('Error loading report content', firstError);
       setContentError('We could not load all report content right now. Please refresh to try again.');
       setReportContent(createEmptyReportContent());
+      availableRoleIds.current = new Set();
+      setSelectedRoleIdState(null);
       return;
     }
 
@@ -374,7 +372,7 @@ function ReportLayout() {
       };
     }
 
-    setReportContent({
+    const nextContent: ReportContent = {
       futureRoles: orderedRoles.map((role) => {
         const { ordering, reasons, ...rest } = role;
         void ordering;
@@ -395,8 +393,44 @@ function ReportLayout() {
       actionPlanPhases,
       learningResources,
       interview
+    };
+
+    setReportContent(nextContent);
+    availableRoleIds.current = new Set(nextContent.futureRoles.map((role) => role.id));
+    setSelectedRoleIdState((current) => (current && availableRoleIds.current.has(current) ? current : null));
+  };
+
+  const hydrateSelectedRole = async (targetReportId: string) => {
+    if (!session?.user?.id || hasLoadedSelectedRole.current) return;
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('report_focus_preferences')
+      .select('selected_role_id')
+      .eq('user_id', session.user.id)
+      .eq('report_id', targetReportId)
+      .maybeSingle<{ selected_role_id: string | null }>();
+
+    if (error) {
+      console.error('Error loading focused role', error);
+      hasLoadedSelectedRole.current = true;
+      return;
+    }
+
+    const storedRoleId = data?.selected_role_id ?? null;
+    hasLoadedSelectedRole.current = true;
+
+    setSelectedRoleIdState((current) => {
+      if (storedRoleId && availableRoleIds.current.has(storedRoleId)) {
+        return storedRoleId;
+      }
+
+      if (current && availableRoleIds.current.has(current)) {
+        return current;
+      }
+
+      return null;
     });
-    setSelectedRoleId((current) => current && roleLookup.has(current) ? current : null);
   };
 
   useEffect(() => {
@@ -438,6 +472,9 @@ function ReportLayout() {
         setAssessment(createFallbackFormData(session.user.email));
         setAssessmentId(null);
         setReportContent(createEmptyReportContent());
+        availableRoleIds.current = new Set();
+        setSelectedRoleIdState(null);
+        setReportId(null);
         setLoading(false);
         return;
       }
@@ -462,6 +499,7 @@ function ReportLayout() {
 
       setAssessment(normalizedFormData);
       setAssessmentId(data.id);
+      setReportId(null);
 
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
@@ -481,11 +519,19 @@ function ReportLayout() {
 
       if (!reportData) {
         setReportContent(createEmptyReportContent());
+        availableRoleIds.current = new Set();
+        setReportId(null);
+        hasLoadedSelectedRole.current = false;
+        setSelectedRoleIdState(null);
         setLoading(false);
         return;
       }
 
+      setReportId(reportData.id);
+      hasLoadedSelectedRole.current = false;
+      setSelectedRoleIdState(null);
       await loadReportContent(reportData);
+      await hydrateSelectedRole(reportData.id);
       setLoading(false);
     };
 
@@ -504,6 +550,34 @@ function ReportLayout() {
     if (!assessmentId) return new Set<string>();
     return actionProgressByAssessment[assessmentId] ?? new Set<string>();
   }, [actionProgressByAssessment, assessmentId]);
+
+  const handleSelectedRoleChange = (roleId: string | null) => {
+    if (roleId && !availableRoleIds.current.has(roleId)) return;
+
+    setSelectedRoleIdState(roleId);
+    hasLoadedSelectedRole.current = true;
+
+    if (!session?.user?.id || !reportId) return;
+
+    const supabase = getSupabaseClient();
+
+    supabase
+      .from('report_focus_preferences')
+      .upsert(
+        {
+          user_id: session.user.id,
+          report_id: reportId,
+          selected_role_id: roleId,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'user_id,report_id' }
+      )
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error saving focused role', error);
+        }
+      });
+  };
 
   useEffect(() => {
     if (!assessmentId || !session?.user?.id) return;
@@ -541,37 +615,6 @@ function ReportLayout() {
       isCancelled = true;
     };
   }, [assessmentId, session?.user?.id]);
-
-  useEffect(() => {
-    // Reset whenever we switch to another assessment so the stored selection can be rehydrated.
-    hasLoadedSelectedRole.current = false;
-    setSelectedRoleId(null);
-  }, [selectedRoleStorageKey]);
-
-  // Load the last selected role for this user/report if it exists and still matches a role in the report.
-  useEffect(() => {
-    if (!selectedRoleStorageKey || hasLoadedSelectedRole.current) return;
-
-    const storedRoleId = localStorage.getItem(selectedRoleStorageKey);
-    const validRoleIds = new Set(reportContent.futureRoles.map((role) => role.id));
-
-    if (storedRoleId && validRoleIds.has(storedRoleId)) {
-      setSelectedRoleId(storedRoleId);
-    }
-
-    hasLoadedSelectedRole.current = true;
-  }, [reportContent.futureRoles, selectedRoleStorageKey]);
-
-  // Persist the selected role so it survives page refreshes and new sessions.
-  useEffect(() => {
-    if (!selectedRoleStorageKey) return;
-
-    if (selectedRoleId) {
-      localStorage.setItem(selectedRoleStorageKey, selectedRoleId);
-    } else {
-      localStorage.removeItem(selectedRoleStorageKey);
-    }
-  }, [selectedRoleId, selectedRoleStorageKey]);
 
   const toggleAction = async (id: string) => {
     if (!assessmentId || !session?.user?.id) return;
@@ -646,7 +689,7 @@ function ReportLayout() {
         progressError,
         reportContent,
         selectedRoleId,
-        setSelectedRoleId
+        setSelectedRoleId: handleSelectedRoleChange
       }}
     >
       <div className="space-y-6 text-slate-100">
