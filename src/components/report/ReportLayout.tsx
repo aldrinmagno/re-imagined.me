@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseClient } from '../../lib/supabaseClient';
 import type { AssessmentFormData, SnapshotInsights } from '../../types/assessment';
@@ -192,6 +192,13 @@ export const useReportContext = () => {
 
 function ReportLayout() {
   const { session } = useAuth();
+  const location = useLocation();
+  const isProfilePage = location.pathname.startsWith('/portal/profile');
+  const headerLabel = isProfilePage ? 'Your account' : 'Your personalised report';
+  const headerTitle = isProfilePage ? 'Profile' : 'Snapshot of where you are now';
+  const headerDescription = isProfilePage
+    ? 'Review details from your latest assessment.'
+    : 'Latest assessment submitted on your account.';
   const [assessment, setAssessment] = useState<AssessmentFormData | null>(null);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -606,9 +613,9 @@ function ReportLayout() {
     >
       <div className="space-y-6 text-slate-100">
         <header className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Your personalised report</p>
-          <h1 className="text-2xl font-bold text-white">Snapshot of where you are now</h1>
-          <p className="text-sm text-slate-300">Latest assessment submitted on your account.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">{headerLabel}</p>
+          <h1 className="text-2xl font-bold text-white">{headerTitle}</h1>
+          <p className="text-sm text-slate-300">{headerDescription}</p>
         </header>
 
         {contentError ? <p className="text-sm text-amber-300">{contentError}</p> : null}
