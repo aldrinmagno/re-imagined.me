@@ -120,6 +120,11 @@ const formatPhaseTitle = (monthLabel?: string | null, title?: string | null) => 
   return monthLabel ? `${monthLabel} – ${title}` : title;
 };
 
+const createPlanActionId = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `act_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
 const parseJsonArray = (value: string | string[] | null): string[] => {
   if (Array.isArray(value)) return value;
 
@@ -704,8 +709,13 @@ function ReportLayout() {
 
     const supabase = getSupabaseClient();
     const fallbackRoleId = input.futureRoleId ?? selectedRoleId ?? null;
+    const newActionId = createPlanActionId();
     let targetPhaseId = input.phaseId;
     let createdPhase: PlanPhaseRecord | null = null;
+    const existingPhase = input.phaseId
+      ? reportContent.actionPlanPhases.find((phase) => phase.id === input.phaseId)
+      : null;
+    const nextPosition = existingPhase?.items.length ?? 0;
 
     if (!targetPhaseId) {
       const { data: phaseRow, error: phaseError } = await supabase
@@ -733,11 +743,13 @@ function ReportLayout() {
     const { data: actionRow, error: actionError } = await supabase
       .from('plan_actions')
       .insert({
+        id: newActionId,
         report_id: reportId,
         phase_id: targetPhaseId,
         future_role_id: fallbackRoleId,
         label: input.actionTitle,
-        time_per_week: input.estimate?.trim() || null
+        time_per_week: input.estimate?.trim() || null,
+        position: nextPosition
       })
       .select('id, phase_id, label, time_per_week, future_role_id')
       .single();
