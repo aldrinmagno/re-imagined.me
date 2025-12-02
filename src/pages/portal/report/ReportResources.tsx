@@ -38,7 +38,7 @@ function ReportResources() {
         </p>
         <p className="text-sm text-slate-300">
           {selectedRole
-            ? `Focusing on: ${selectedRole.title}. Switch roles in the overview to change these resources.`
+            ? `Focusing on: ${selectedRole.title}. Switch roles in Roles & Skills to change these resources.`
             : 'Showing resources across all suggested roles until you pick one to focus.'}
         </p>
       </div>
