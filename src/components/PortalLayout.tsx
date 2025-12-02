@@ -11,20 +11,20 @@ const portalLinks = [
 function PortalLayout() {
   const { user, signOut } = useAuth();
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      <header className="border-b border-slate-800 bg-slate-900/95">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <header className="border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
             <Logo variant="compact" />
             <div>
-              <p className="text-sm font-semibold text-slate-200">re-imagined.me Portal</p>
-              <p className="text-xs text-slate-400">Welcome back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}</p>
+              <p className="text-sm font-semibold text-slate-900">re-imagined.me Portal</p>
+              <p className="text-xs text-slate-600">Welcome back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={signOut}
-            className="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-emerald-300 hover:text-emerald-300"
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-emerald-300 hover:text-emerald-700 hover:shadow-sm"
           >
             Log out
           </button>
@@ -42,7 +42,7 @@ function PortalLayout() {
                   to={link.to}
                   className={({ isActive }) =>
                     `rounded-xl px-4 py-2 font-medium transition ${
-                      isActive ? 'bg-emerald-500/20 text-emerald-200' : 'text-slate-300 hover:text-white'
+                      isActive ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'text-slate-700 hover:text-slate-900'
                     }`
                   }
                 >
@@ -50,14 +50,16 @@ function PortalLayout() {
                 </NavLink>
 
                 {isReportLink && link.children && (
-                  <div className="ml-2 flex flex-col gap-1 border-l border-slate-800 pl-2">
+                  <div className="ml-2 flex flex-col gap-1 border-l border-slate-200 pl-2">
                     {link.children.map((child) => (
                       <NavLink
                         key={child.to}
                         to={`/portal/report/${child.to}`}
                         className={({ isActive }) =>
                           `rounded-lg px-3 py-2 text-left font-medium transition ${
-                            isActive ? 'bg-emerald-500/10 text-emerald-200' : 'text-slate-400 hover:text-white'
+                            isActive
+                              ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                              : 'text-slate-600 hover:text-slate-900'
                           }`
                         }
                       >
@@ -71,7 +73,7 @@ function PortalLayout() {
           })}
         </nav>
 
-        <section className="flex-1 shadow-2xl shadow-emerald-500/5">
+        <section className="flex-1">
           <Outlet />
         </section>
       </div>

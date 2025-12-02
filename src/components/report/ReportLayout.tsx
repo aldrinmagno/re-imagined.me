@@ -877,15 +877,15 @@ function ReportLayout() {
   };
 
   if (loading) {
-    return <p className="text-slate-200">Loading your report…</p>;
+    return <p className="text-slate-600">Loading your report…</p>;
   }
 
   if (error) {
-    return <p className="text-red-300">{error}</p>;
+    return <p className="text-red-600">{error}</p>;
   }
 
   if (!assessment) {
-    return <p className="text-slate-200">No assessment found yet. Complete the assessment to see your report.</p>;
+    return <p className="text-slate-600">No assessment found yet. Complete the assessment to see your report.</p>;
   }
 
   return (
@@ -904,14 +904,14 @@ function ReportLayout() {
         deletePlanItem
       }}
     >
-      <div className="space-y-6 text-slate-100">
-        <header className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">{headerLabel}</p>
-          <h1 className="text-2xl font-bold text-white">{headerTitle}</h1>
-          <p className="text-sm text-slate-300">{headerDescription}</p>
+      <div className="space-y-6 text-slate-900">
+        <header className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{headerLabel}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{headerTitle}</h1>
+          <p className="text-sm text-slate-700">{headerDescription}</p>
         </header>
 
-        {contentError ? <p className="text-sm text-amber-300">{contentError}</p> : null}
+        {contentError ? <p className="text-sm text-amber-600">{contentError}</p> : null}
 
         <Outlet />
       </div>
