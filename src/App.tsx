@@ -54,7 +54,10 @@ function App() {
             <Route path="skills" element={<Navigate to="/portal/report/roles-skills" replace />} />
             <Route path="plan" element={<ReportPlan />} />
             <Route path="resources" element={<ReportResources />} />
-            <Route path="interview" element={<ReportInterview />} />
+            <Route path="interview" element={<Navigate to="/portal/interview" replace />} />
+          </Route>
+          <Route path="/portal/interview" element={<ReportLayout />}>
+            <Route index element={<ReportInterview />} />
           </Route>
         </Route>
 
