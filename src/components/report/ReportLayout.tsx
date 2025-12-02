@@ -195,7 +195,7 @@ const createFallbackFormData = (email: string | null): AssessmentFormData => ({
 });
 
 export const reportSectionLinks = [
-  { to: 'overview', label: 'Overview' },
+  { to: 'roles-skills', label: 'Roles & Skills' },
   { to: 'plan', label: 'Plan' },
   { to: 'resources', label: 'Resources' },
   { to: 'interview', label: 'Interview' }

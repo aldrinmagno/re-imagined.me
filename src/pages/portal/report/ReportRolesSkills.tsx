@@ -1,7 +1,7 @@
 import RolesSkillsSection from '../../../components/report/RolesSkillsSection';
 
-function ReportOverview() {
+function ReportRolesSkills() {
   return <RolesSkillsSection />;
 }
 
-export default ReportOverview;
+export default ReportRolesSkills;

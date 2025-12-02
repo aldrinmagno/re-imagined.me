@@ -11,7 +11,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Logout from './pages/Logout';
 import SampleReport from './pages/SampleReport';
 import ReportLayout from './components/report/ReportLayout';
-import ReportOverview from './pages/portal/report/ReportOverview';
+import ReportRolesSkills from './pages/portal/report/ReportRolesSkills';
 import ReportPlan from './pages/portal/report/ReportPlan';
 import ReportResources from './pages/portal/report/ReportResources';
 import ReportInterview from './pages/portal/report/ReportInterview';
@@ -19,7 +19,7 @@ import Profile from './pages/portal/Profile';
 
 const ReportAliasRedirect = () => {
   const { section } = useParams();
-  const target = section ? `/portal/report/${section}` : '/portal/report/overview';
+  const target = section ? `/portal/report/${section}` : '/portal/report/roles-skills';
 
   return <Navigate to={target} replace />;
 };
@@ -41,23 +41,24 @@ function App() {
 
         <Route element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
           <Route path="/portal" element={<ReportLayout />}>
-            <Route index element={<Navigate to="/portal/report/overview" replace />} />
+            <Route index element={<Navigate to="/portal/report/roles-skills" replace />} />
           </Route>
           <Route path="/portal/profile" element={<ReportLayout />}>
             <Route index element={<Profile />} />
           </Route>
           <Route path="/portal/report" element={<ReportLayout />}>
-            <Route index element={<Navigate to="/portal/report/overview" replace />} />
-            <Route path="overview" element={<ReportOverview />} />
-            <Route path="roles" element={<Navigate to="/portal/report/overview" replace />} />
-            <Route path="skills" element={<Navigate to="/portal/report/overview" replace />} />
+            <Route index element={<Navigate to="/portal/report/roles-skills" replace />} />
+            <Route path="roles-skills" element={<ReportRolesSkills />} />
+            <Route path="overview" element={<Navigate to="/portal/report/roles-skills" replace />} />
+            <Route path="roles" element={<Navigate to="/portal/report/roles-skills" replace />} />
+            <Route path="skills" element={<Navigate to="/portal/report/roles-skills" replace />} />
             <Route path="plan" element={<ReportPlan />} />
             <Route path="resources" element={<ReportResources />} />
             <Route path="interview" element={<ReportInterview />} />
           </Route>
         </Route>
 
-        <Route path="/report" element={<Navigate to="/report/overview" replace />} />
+        <Route path="/report" element={<Navigate to="/report/roles-skills" replace />} />
         <Route path="/report/:section" element={<ReportAliasRedirect />} />
       </Routes>
     </Router>
