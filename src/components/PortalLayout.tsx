@@ -4,7 +4,8 @@ import Logo from './Logo';
 import { reportSectionLinks } from './report/ReportLayout';
 
 const portalLinks = [
-  { to: '/portal/report', label: 'Report', children: reportSectionLinks },
+  { to: '/portal/profile', label: 'Profile' },
+  { to: '/portal/report', label: 'Report', children: reportSectionLinks }
 ] as const;
 
 function PortalLayout() {
