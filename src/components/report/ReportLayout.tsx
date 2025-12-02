@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseClient } from '../../lib/supabaseClient';
@@ -208,6 +208,13 @@ function ReportLayout() {
   const [reportContent, setReportContent] = useState<ReportContent>(createEmptyReportContent());
   const [contentError, setContentError] = useState('');
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const hasLoadedSelectedRole = useRef(false);
+
+  const selectedRoleStorageKey = useMemo(() => {
+    if (!session?.user?.id || !assessmentId) return null;
+
+    return `report:selectedRole:${session.user.id}:${assessmentId}`;
+  }, [assessmentId, session?.user?.id]);
 
   const loadReportContent = async (report: ReportRecord) => {
     const supabase = getSupabaseClient();
@@ -534,6 +541,37 @@ function ReportLayout() {
       isCancelled = true;
     };
   }, [assessmentId, session?.user?.id]);
+
+  useEffect(() => {
+    // Reset whenever we switch to another assessment so the stored selection can be rehydrated.
+    hasLoadedSelectedRole.current = false;
+    setSelectedRoleId(null);
+  }, [selectedRoleStorageKey]);
+
+  // Load the last selected role for this user/report if it exists and still matches a role in the report.
+  useEffect(() => {
+    if (!selectedRoleStorageKey || hasLoadedSelectedRole.current) return;
+
+    const storedRoleId = localStorage.getItem(selectedRoleStorageKey);
+    const validRoleIds = new Set(reportContent.futureRoles.map((role) => role.id));
+
+    if (storedRoleId && validRoleIds.has(storedRoleId)) {
+      setSelectedRoleId(storedRoleId);
+    }
+
+    hasLoadedSelectedRole.current = true;
+  }, [reportContent.futureRoles, selectedRoleStorageKey]);
+
+  // Persist the selected role so it survives page refreshes and new sessions.
+  useEffect(() => {
+    if (!selectedRoleStorageKey) return;
+
+    if (selectedRoleId) {
+      localStorage.setItem(selectedRoleStorageKey, selectedRoleId);
+    } else {
+      localStorage.removeItem(selectedRoleStorageKey);
+    }
+  }, [selectedRoleId, selectedRoleStorageKey]);
 
   const toggleAction = async (id: string) => {
     if (!assessmentId || !session?.user?.id) return;
