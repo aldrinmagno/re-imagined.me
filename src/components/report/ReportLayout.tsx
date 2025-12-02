@@ -91,6 +91,40 @@ interface InterviewRecord {
   talking_points: string[] | null;
 }
 
+type PlanItemInput = {
+  actionTitle: string;
+  estimate?: string | null;
+  phaseId?: string;
+  newPhase?: {
+    title: string;
+    description?: string | null;
+    monthLabel?: string | null;
+  };
+  futureRoleId?: string | null;
+};
+
+type PlanItemUpdates = {
+  actionTitle?: string;
+  estimate?: string | null;
+};
+
+type ActionMutationResult = {
+  success: boolean;
+  error?: string;
+  actionId?: string;
+  phaseId?: string;
+};
+
+const formatPhaseTitle = (monthLabel?: string | null, title?: string | null) => {
+  if (!title) return 'Additional focus';
+  return monthLabel ? `${monthLabel} – ${title}` : title;
+};
+
+const createPlanActionId = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `act_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
 const parseJsonArray = (value: string | string[] | null): string[] => {
   if (Array.isArray(value)) return value;
 
@@ -176,6 +210,9 @@ type ReportContextValue = {
   reportContent: ReportContent;
   selectedRoleId: string | null;
   setSelectedRoleId: (roleId: string | null) => void;
+  addPlanItem: (input: PlanItemInput) => Promise<ActionMutationResult>;
+  updatePlanItem: (id: string, updates: PlanItemUpdates) => Promise<ActionMutationResult>;
+  deletePlanItem: (id: string) => Promise<ActionMutationResult>;
 };
 
 const ReportContext = createContext<ReportContextValue | undefined>(undefined);
@@ -667,6 +704,178 @@ function ReportLayout() {
     }
   };
 
+  const addPlanItem = async (input: PlanItemInput): Promise<ActionMutationResult> => {
+    if (!reportId) return { success: false, error: 'No report available to save plan items yet.' };
+
+    const supabase = getSupabaseClient();
+    const fallbackRoleId = input.futureRoleId ?? selectedRoleId ?? null;
+    const newActionId = createPlanActionId();
+    let targetPhaseId = input.phaseId;
+    let createdPhase: PlanPhaseRecord | null = null;
+    const existingPhase = input.phaseId
+      ? reportContent.actionPlanPhases.find((phase) => phase.id === input.phaseId)
+      : null;
+    const nextPosition = existingPhase?.items.length ?? 0;
+
+    if (!targetPhaseId) {
+      const { data: phaseRow, error: phaseError } = await supabase
+        .from('ninety_day_plan_phases')
+        .insert({
+          report_id: reportId,
+          future_role_id: fallbackRoleId,
+          month_label: input.newPhase?.monthLabel || null,
+          title: input.newPhase?.title || 'Additional focus',
+          description: input.newPhase?.description || null,
+          position: reportContent.actionPlanPhases.length
+        })
+        .select('id, month_label, title, description, future_role_id')
+        .single();
+
+      if (phaseError || !phaseRow) {
+        console.error('Error creating plan phase', phaseError);
+        return { success: false, error: 'We could not create that plan section. Please try again.' };
+      }
+
+      createdPhase = phaseRow as PlanPhaseRecord;
+      targetPhaseId = phaseRow.id;
+    }
+
+    const { data: actionRow, error: actionError } = await supabase
+      .from('plan_actions')
+      .insert({
+        id: newActionId,
+        report_id: reportId,
+        phase_id: targetPhaseId,
+        future_role_id: fallbackRoleId,
+        label: input.actionTitle,
+        time_per_week: input.estimate?.trim() || null,
+        position: nextPosition
+      })
+      .select('id, phase_id, label, time_per_week, future_role_id')
+      .single();
+
+    if (actionError || !actionRow) {
+      console.error('Error creating plan action', actionError);
+      return { success: false, error: 'We could not save your plan item. Please try again.' };
+    }
+
+    const actionItem: ActionItem = {
+      id: actionRow.id,
+      title: actionRow.label,
+      estimate: actionRow.time_per_week,
+      futureRoleId: actionRow.future_role_id
+    };
+
+    setReportContent((prev) => {
+      const phaseIndex = prev.actionPlanPhases.findIndex((phase) => phase.id === targetPhaseId);
+      const nextPhases = [...prev.actionPlanPhases];
+
+      if (phaseIndex === -1) {
+        nextPhases.push({
+          id: targetPhaseId!,
+          title: formatPhaseTitle(createdPhase?.month_label ?? input.newPhase?.monthLabel, createdPhase?.title ?? input.newPhase?.title),
+          monthLabel: createdPhase?.month_label ?? input.newPhase?.monthLabel ?? null,
+          description: createdPhase?.description ?? input.newPhase?.description ?? null,
+          futureRoleId: createdPhase?.future_role_id ?? fallbackRoleId,
+          items: [actionItem]
+        });
+      } else {
+        const targetPhase = nextPhases[phaseIndex];
+        nextPhases[phaseIndex] = { ...targetPhase, items: [...targetPhase.items, actionItem] };
+      }
+
+      return { ...prev, actionPlanPhases: nextPhases };
+    });
+
+    return { success: true, actionId: actionRow.id, phaseId: targetPhaseId };
+  };
+
+  const updatePlanItem = async (id: string, updates: PlanItemUpdates): Promise<ActionMutationResult> => {
+    if (!reportId) return { success: false, error: 'No report available to update plan items yet.' };
+
+    const supabase = getSupabaseClient();
+    const payload: Partial<PlanActionRecord> = {};
+
+    if (typeof updates.actionTitle === 'string') {
+      payload.label = updates.actionTitle.trim();
+    }
+
+    if (updates.estimate !== undefined) {
+      payload.time_per_week = updates.estimate?.trim() || null;
+    }
+
+    const { error } = await supabase
+      .from('plan_actions')
+      .update(payload)
+      .eq('id', id)
+      .eq('report_id', reportId);
+
+    if (error) {
+      console.error('Error updating plan action', error);
+      return { success: false, error: 'We could not update that plan item right now.' };
+    }
+
+    setReportContent((prev) => ({
+      ...prev,
+      actionPlanPhases: prev.actionPlanPhases.map((phase) => ({
+        ...phase,
+        items: phase.items.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                title: updates.actionTitle ?? item.title,
+                estimate: updates.estimate ?? item.estimate
+              }
+            : item
+        )
+      }))
+    }));
+
+    return { success: true, actionId: id };
+  };
+
+  const deletePlanItem = async (id: string): Promise<ActionMutationResult> => {
+    if (!reportId) return { success: false, error: 'No report available to remove plan items yet.' };
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('plan_actions')
+      .delete()
+      .eq('id', id)
+      .eq('report_id', reportId)
+      .select('id');
+
+    if (error) {
+      console.error('Error deleting plan action', error);
+      return { success: false, error: 'We could not delete that plan item. Please try again.' };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'That plan item was not found. Try refreshing your report.' };
+    }
+
+    setReportContent((prev) => {
+      const nextPhases = prev.actionPlanPhases
+        .map((phase) => ({ ...phase, items: phase.items.filter((item) => item.id !== id) }))
+        .filter((phase) => phase.items.length > 0 || phase.description || phase.futureRoleId || phase.monthLabel);
+
+      return { ...prev, actionPlanPhases: nextPhases };
+    });
+
+    if (assessmentId) {
+      setActionProgressByAssessment((prev) => {
+        const existing = prev[assessmentId] ?? new Set<string>();
+        if (!existing.has(id)) return prev;
+
+        const nextSet = new Set(existing);
+        nextSet.delete(id);
+        return { ...prev, [assessmentId]: nextSet };
+      });
+    }
+
+    return { success: true, actionId: id };
+  };
+
   if (loading) {
     return <p className="text-slate-200">Loading your report…</p>;
   }
@@ -689,7 +898,10 @@ function ReportLayout() {
         progressError,
         reportContent,
         selectedRoleId,
-        setSelectedRoleId: handleSelectedRoleChange
+        setSelectedRoleId: handleSelectedRoleChange,
+        addPlanItem,
+        updatePlanItem,
+        deletePlanItem
       }}
     >
       <div className="space-y-6 text-slate-100">
