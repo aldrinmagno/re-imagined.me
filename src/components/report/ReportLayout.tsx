@@ -838,11 +838,20 @@ function ReportLayout() {
     if (!reportId) return { success: false, error: 'No report available to remove plan items yet.' };
 
     const supabase = getSupabaseClient();
-    const { error } = await supabase.from('plan_actions').delete().eq('id', id).eq('report_id', reportId);
+    const { data, error } = await supabase
+      .from('plan_actions')
+      .delete()
+      .eq('id', id)
+      .eq('report_id', reportId)
+      .select('id');
 
     if (error) {
       console.error('Error deleting plan action', error);
       return { success: false, error: 'We could not delete that plan item. Please try again.' };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: 'That plan item was not found. Try refreshing your report.' };
     }
 
     setReportContent((prev) => {
@@ -852,6 +861,17 @@ function ReportLayout() {
 
       return { ...prev, actionPlanPhases: nextPhases };
     });
+
+    if (assessmentId) {
+      setActionProgressByAssessment((prev) => {
+        const existing = prev[assessmentId] ?? new Set<string>();
+        if (!existing.has(id)) return prev;
+
+        const nextSet = new Set(existing);
+        nextSet.delete(id);
+        return { ...prev, [assessmentId]: nextSet };
+      });
+    }
 
     return { success: true, actionId: id };
   };
