@@ -10,6 +10,7 @@ import {
   updateNetworkContact,
   updateNetworkTask
 } from '../../lib/networkingApi';
+import { logJobSearchEvent } from '../../lib/jobSearchEventsApi';
 import { buildTemplate, getContactLabel, sortTasksByDueDate } from '../../lib/networkingUtils';
 import type { NetworkContactRecord, NetworkTaskRecord, NetworkTaskStatus, OutreachTemplate } from '../../types/networking';
 
@@ -111,6 +112,11 @@ function Networking() {
         next_follow_up: contactForm.next_follow_up || null,
         notes: contactForm.notes || null
       });
+      await logJobSearchEvent(user.id, 'outreach', {
+        contact_id: created.id,
+        name: created.name,
+        org: created.org
+      });
       setContacts((prev) => [created, ...prev]);
       setContactForm(emptyContact());
     } catch (saveError) {
@@ -133,6 +139,10 @@ function Networking() {
         ...taskForm,
         due_date: taskForm.due_date || null,
         linked_contact_id: taskForm.linked_contact_id || null
+      });
+      await logJobSearchEvent(user.id, 'outreach', {
+        task_id: created.id,
+        task: created.task
       });
       setTasks((prev) => [created, ...prev]);
       setTaskForm(emptyTask());

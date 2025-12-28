@@ -21,6 +21,7 @@ import CVVersions from './pages/portal/CVVersions';
 import Radar from './pages/portal/Radar';
 import Applications from './pages/portal/Applications';
 import Networking from './pages/portal/Networking';
+import Progress from './pages/portal/Progress';
 
 const ReportAliasRedirect = () => {
   const { section } = useParams();
@@ -63,6 +64,9 @@ function App() {
           <Route path="/portal/networking" element={<ReportLayout />}>
             <Route index element={<Networking />} />
           </Route>
+          <Route path="/portal/progress" element={<ReportLayout />}>
+            <Route index element={<Progress />} />
+          </Route>
           <Route path="/portal/profile" element={<ReportLayout />}>
             <Route index element={<Profile />} />
           </Route>
@@ -86,6 +90,7 @@ function App() {
         <Route path="/radar" element={<Navigate to="/portal/radar" replace />} />
         <Route path="/applications" element={<Navigate to="/portal/applications" replace />} />
         <Route path="/networking" element={<Navigate to="/portal/networking" replace />} />
+        <Route path="/progress" element={<Navigate to="/portal/progress" replace />} />
 
         <Route path="/report" element={<Navigate to="/report/roles-skills" replace />} />
         <Route path="/report/:section" element={<ReportAliasRedirect />} />

@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { createApplication, deleteApplication, getApplications, updateApplication } from '../../lib/applicationsApi';
 import { createApplicationComm, getApplicationComms } from '../../lib/applicationCommsApi';
 import { generateApplicationComms } from '../../lib/applicationCommsGenerator';
+import { logJobSearchEvent } from '../../lib/jobSearchEventsApi';
 import { getSuggestedFollowUpDate, isFollowUpDue } from '../../lib/applicationUtils';
 import type { ApplicationRecord, ApplicationStatus } from '../../types/applications';
 import type { ApplicationCommRecord, ApplicationCommType } from '../../types/applicationComms';
@@ -107,6 +108,11 @@ function Applications() {
         next_step: formState.next_step || null,
         next_step_date: formState.next_step_date || null
       });
+      await logJobSearchEvent(user.id, 'apply', {
+        application_id: created.id,
+        company: created.company,
+        role_title: created.role_title
+      });
       setApplications((prev) => [created, ...prev]);
       setFormState(emptyApplication());
     } catch (saveError) {
@@ -136,6 +142,7 @@ function Applications() {
     setSaving(true);
     setError(null);
     try {
+      const previousStatus = applications.find((application) => application.id === editingId)?.status;
       const updated = await updateApplication(user.id, editingId, {
         ...editingState,
         source: editingState.source || null,
@@ -145,6 +152,23 @@ function Applications() {
         next_step: editingState.next_step || null,
         next_step_date: editingState.next_step_date || null
       });
+      if (editingState.status !== previousStatus) {
+        const statusEvent =
+          editingState.status === 'interviewing'
+            ? 'interview'
+            : editingState.status === 'offer'
+              ? 'offer'
+              : editingState.status === 'rejected'
+                ? 'reject'
+                : null;
+        if (statusEvent) {
+          await logJobSearchEvent(user.id, statusEvent, {
+            application_id: updated.id,
+            company: updated.company,
+            role_title: updated.role_title
+          });
+        }
+      }
       setApplications((prev) => prev.map((application) => (application.id === updated.id ? updated : application)));
       setEditingId(null);
     } catch (updateError) {
@@ -196,6 +220,10 @@ function Applications() {
         const saved = await createApplicationComm(user.id, commsOpenId, type, content);
         entries.push(saved);
       }
+      await logJobSearchEvent(user.id, 'followup', {
+        application_id: commsOpenId,
+        tone: commsTone
+      });
       setCommsHistory((prev) => [...entries, ...prev]);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Unable to save follow-up scripts.');
