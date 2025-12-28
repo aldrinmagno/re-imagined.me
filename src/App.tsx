@@ -18,6 +18,7 @@ import ReportInterview from './pages/portal/report/ReportInterview';
 import Profile from './pages/portal/Profile';
 import ImpactInventory from './pages/portal/ImpactInventory';
 import CVVersions from './pages/portal/CVVersions';
+import Radar from './pages/portal/Radar';
 
 const ReportAliasRedirect = () => {
   const { section } = useParams();
@@ -51,6 +52,9 @@ function App() {
           <Route path="/portal/cv" element={<ReportLayout />}>
             <Route index element={<CVVersions />} />
           </Route>
+          <Route path="/portal/radar" element={<ReportLayout />}>
+            <Route index element={<Radar />} />
+          </Route>
           <Route path="/portal/profile" element={<ReportLayout />}>
             <Route index element={<Profile />} />
           </Route>
@@ -71,6 +75,7 @@ function App() {
 
         <Route path="/inventory" element={<Navigate to="/portal/inventory" replace />} />
         <Route path="/cv" element={<Navigate to="/portal/cv" replace />} />
+        <Route path="/radar" element={<Navigate to="/portal/radar" replace />} />
 
         <Route path="/report" element={<Navigate to="/report/roles-skills" replace />} />
         <Route path="/report/:section" element={<ReportAliasRedirect />} />
