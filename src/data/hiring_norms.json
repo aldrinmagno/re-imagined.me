@@ -1,0 +1,38 @@
+{
+  "US": [
+    {
+      "key": "us-directness",
+      "title": "Be concise and impact-focused",
+      "body": "Hiring teams expect concise stories that highlight outcomes, metrics, and ownership. Keep answers structured with a clear result."
+    },
+    {
+      "key": "us-questions",
+      "title": "Prepare thoughtful questions",
+      "body": "Interviewers often reserve time for candidate questions. Bring 3–5 questions about team priorities, success metrics, and collaboration."
+    }
+  ],
+  "UK": [
+    {
+      "key": "uk-structured",
+      "title": "Use structured examples",
+      "body": "STAR-style responses work well. Emphasize collaboration and stakeholder alignment while keeping the tone professional."
+    },
+    {
+      "key": "uk-values",
+      "title": "Link to company values",
+      "body": "Many UK employers weigh cultural fit. Reference company values or mission in your examples."
+    }
+  ],
+  "CA": [
+    {
+      "key": "ca-collaboration",
+      "title": "Highlight collaboration",
+      "body": "Canadian interview norms lean toward teamwork and cross-functional alignment. Mention how you partner across teams."
+    },
+    {
+      "key": "ca-process",
+      "title": "Expect multi-step processes",
+      "body": "Be ready for multiple interview rounds. Ask about timelines and next steps to stay aligned."
+    }
+  ]
+}
