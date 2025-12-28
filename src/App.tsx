@@ -16,6 +16,7 @@ import ReportPlan from './pages/portal/report/ReportPlan';
 import ReportResources from './pages/portal/report/ReportResources';
 import ReportInterview from './pages/portal/report/ReportInterview';
 import Profile from './pages/portal/Profile';
+import ImpactInventory from './pages/portal/ImpactInventory';
 
 const ReportAliasRedirect = () => {
   const { section } = useParams();
@@ -43,6 +44,9 @@ function App() {
           <Route path="/portal" element={<ReportLayout />}>
             <Route index element={<Navigate to="/portal/report/roles-skills" replace />} />
           </Route>
+          <Route path="/portal/inventory" element={<ReportLayout />}>
+            <Route index element={<ImpactInventory />} />
+          </Route>
           <Route path="/portal/profile" element={<ReportLayout />}>
             <Route index element={<Profile />} />
           </Route>
@@ -60,6 +64,8 @@ function App() {
             <Route index element={<ReportInterview />} />
           </Route>
         </Route>
+
+        <Route path="/inventory" element={<Navigate to="/portal/inventory" replace />} />
 
         <Route path="/report" element={<Navigate to="/report/roles-skills" replace />} />
         <Route path="/report/:section" element={<ReportAliasRedirect />} />
