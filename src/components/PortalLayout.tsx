@@ -9,6 +9,7 @@ const portalLinks = [
   { to: '/portal/cv', label: 'CV Versions' },
   { to: '/portal/radar', label: 'Radar' },
   { to: '/portal/applications', label: 'Applications' },
+  { to: '/portal/networking', label: 'Networking' },
   { to: '/portal/interview', label: 'Interview' },
   { to: '/portal/profile', label: 'Profile' }
 ] as const;
