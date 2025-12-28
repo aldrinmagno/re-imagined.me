@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { createApplication, deleteApplication, getApplications, updateApplication } from '../../lib/applicationsApi';
+import { createApplicationComm, getApplicationComms } from '../../lib/applicationCommsApi';
+import { generateApplicationComms } from '../../lib/applicationCommsGenerator';
 import { getSuggestedFollowUpDate, isFollowUpDue } from '../../lib/applicationUtils';
 import type { ApplicationRecord, ApplicationStatus } from '../../types/applications';
+import type { ApplicationCommRecord, ApplicationCommType } from '../../types/applicationComms';
 
 const statusColumns: ApplicationStatus[] = ['applied', 'interviewing', 'offer', 'rejected'];
 
@@ -30,6 +33,22 @@ function Applications() {
   const [view, setView] = useState<'table' | 'kanban'>('table');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingState, setEditingState] = useState(emptyApplication());
+  const [commsOpenId, setCommsOpenId] = useState<string | null>(null);
+  const [commsTone, setCommsTone] = useState<'direct' | 'warm' | 'confident'>('warm');
+  const [commsPayload, setCommsPayload] = useState<{
+    call_script: string;
+    email_template: string;
+    linkedin_message: string;
+  } | null>(null);
+  const [commsHistory, setCommsHistory] = useState<ApplicationCommRecord[]>([]);
+  const [commsLoading, setCommsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!commsOpenId) return;
+    const application = applications.find((item) => item.id === commsOpenId);
+    if (!application) return;
+    setCommsPayload(generateApplicationComms(application, commsTone));
+  }, [applications, commsOpenId, commsTone]);
 
   const groupedByStatus = useMemo(
     () =>
@@ -146,6 +165,42 @@ function Applications() {
       setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete application.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openComms = async (application: ApplicationRecord) => {
+    if (!user) return;
+    setCommsOpenId(application.id);
+    setCommsPayload(generateApplicationComms(application, commsTone));
+    setCommsLoading(true);
+    try {
+      const history = await getApplicationComms(user.id, application.id);
+      setCommsHistory(history);
+    } catch (historyError) {
+      setError(historyError instanceof Error ? historyError.message : 'Unable to load follow-up scripts.');
+    } finally {
+      setCommsLoading(false);
+    }
+  };
+
+  const handleGenerateComms = async () => {
+    if (!user || !commsOpenId) return;
+    const application = applications.find((item) => item.id === commsOpenId);
+    if (!application) return;
+    const generated = generateApplicationComms(application, commsTone);
+    setCommsPayload(generated);
+    setCommsLoading(true);
+    try {
+      const entries: ApplicationCommRecord[] = [];
+      for (const [type, content] of Object.entries(generated) as [ApplicationCommType, string][]) {
+        const saved = await createApplicationComm(user.id, commsOpenId, type, content);
+        entries.push(saved);
+      }
+      setCommsHistory((prev) => [...entries, ...prev]);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Unable to save follow-up scripts.');
+    } finally {
+      setCommsLoading(false);
     }
   };
 
@@ -353,6 +408,13 @@ function Applications() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => openComms(application)}
+                              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                            >
+                              Follow-up scripts
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleDelete(application.id)}
                               className="text-xs font-semibold text-rose-600 hover:text-rose-700"
                             >
@@ -399,6 +461,13 @@ function Applications() {
                             className="font-semibold text-emerald-600 hover:text-emerald-700"
                           >
                             Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openComms(application)}
+                            className="font-semibold text-emerald-600 hover:text-emerald-700"
+                          >
+                            Scripts
                           </button>
                           <button
                             type="button"
@@ -543,6 +612,95 @@ function Applications() {
             </button>
           </div>
         </section>
+      )}
+
+      {commsOpenId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-3xl bg-white p-6 shadow-xl">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Follow-up scripts</p>
+                <h2 className="text-lg font-semibold text-slate-900">Generate outreach with the right tone.</h2>
+                <p className="text-sm text-slate-600">Pick a tone, generate scripts, and copy as needed.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCommsOpenId(null)}
+                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {(['warm', 'direct', 'confident'] as const).map((tone) => (
+                <button
+                  key={tone}
+                  type="button"
+                  onClick={() => setCommsTone(tone)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                    commsTone === tone
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                      : 'border-slate-200 text-slate-600 hover:border-emerald-200 hover:text-emerald-700'
+                  }`}
+                >
+                  {tone.charAt(0).toUpperCase() + tone.slice(1)}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={handleGenerateComms}
+                disabled={commsLoading}
+                className="ml-auto rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {commsLoading ? 'Generating...' : 'Generate scripts'}
+              </button>
+            </div>
+
+            {commsPayload && (
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {Object.entries(commsPayload).map(([key, value]) => (
+                  <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      {key.replace('_', ' ')}
+                    </p>
+                    <textarea
+                      value={value}
+                      readOnly
+                      rows={8}
+                      className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard?.writeText(value)}
+                      className="mt-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Previously generated</p>
+              {commsLoading ? (
+                <p className="mt-2 text-sm text-slate-500">Loading scripts...</p>
+              ) : commsHistory.length === 0 ? (
+                <p className="mt-2 text-sm text-slate-500">No saved scripts yet.</p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {commsHistory.map((item) => (
+                    <div key={item.id} className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600">
+                      <p className="font-semibold text-slate-700">{item.type.replace('_', ' ')}</p>
+                      <p className="mt-1 whitespace-pre-wrap">{item.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
