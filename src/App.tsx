@@ -16,6 +16,12 @@ import ReportPlan from './pages/portal/report/ReportPlan';
 import ReportResources from './pages/portal/report/ReportResources';
 import ReportInterview from './pages/portal/report/ReportInterview';
 import Profile from './pages/portal/Profile';
+import ImpactInventory from './pages/portal/ImpactInventory';
+import CVVersions from './pages/portal/CVVersions';
+import Radar from './pages/portal/Radar';
+import Applications from './pages/portal/Applications';
+import Networking from './pages/portal/Networking';
+import Progress from './pages/portal/Progress';
 
 const ReportAliasRedirect = () => {
   const { section } = useParams();
@@ -43,6 +49,24 @@ function App() {
           <Route path="/portal" element={<ReportLayout />}>
             <Route index element={<Navigate to="/portal/report/roles-skills" replace />} />
           </Route>
+          <Route path="/portal/inventory" element={<ReportLayout />}>
+            <Route index element={<ImpactInventory />} />
+          </Route>
+          <Route path="/portal/cv" element={<ReportLayout />}>
+            <Route index element={<CVVersions />} />
+          </Route>
+          <Route path="/portal/radar" element={<ReportLayout />}>
+            <Route index element={<Radar />} />
+          </Route>
+          <Route path="/portal/applications" element={<ReportLayout />}>
+            <Route index element={<Applications />} />
+          </Route>
+          <Route path="/portal/networking" element={<ReportLayout />}>
+            <Route index element={<Networking />} />
+          </Route>
+          <Route path="/portal/progress" element={<ReportLayout />}>
+            <Route index element={<Progress />} />
+          </Route>
           <Route path="/portal/profile" element={<ReportLayout />}>
             <Route index element={<Profile />} />
           </Route>
@@ -60,6 +84,13 @@ function App() {
             <Route index element={<ReportInterview />} />
           </Route>
         </Route>
+
+        <Route path="/inventory" element={<Navigate to="/portal/inventory" replace />} />
+        <Route path="/cv" element={<Navigate to="/portal/cv" replace />} />
+        <Route path="/radar" element={<Navigate to="/portal/radar" replace />} />
+        <Route path="/applications" element={<Navigate to="/portal/applications" replace />} />
+        <Route path="/networking" element={<Navigate to="/portal/networking" replace />} />
+        <Route path="/progress" element={<Navigate to="/portal/progress" replace />} />
 
         <Route path="/report" element={<Navigate to="/report/roles-skills" replace />} />
         <Route path="/report/:section" element={<ReportAliasRedirect />} />

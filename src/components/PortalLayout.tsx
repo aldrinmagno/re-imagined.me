@@ -5,6 +5,12 @@ import { reportSectionLinks } from './report/ReportLayout';
 
 const portalLinks = [
   { to: '/portal/report', label: 'Report', children: reportSectionLinks },
+  { to: '/portal/inventory', label: 'Impact Inventory' },
+  { to: '/portal/cv', label: 'CV Versions' },
+  { to: '/portal/radar', label: 'Radar' },
+  { to: '/portal/applications', label: 'Applications' },
+  { to: '/portal/networking', label: 'Networking' },
+  { to: '/portal/progress', label: 'Progress' },
   { to: '/portal/interview', label: 'Interview' },
   { to: '/portal/profile', label: 'Profile' }
 ] as const;

@@ -1,4 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import { getActionPlan, saveActionPlan } from '../../../lib/actionPlanApi';
+import { generateBalancedActionPlan, regenerateWeek } from '../../../lib/actionPlanGenerator';
+import type { ActionPlanCategory, ActionPlanData } from '../../../types/actionPlan';
 import { useReportContext } from '../../../components/report/ReportLayout';
 
 function ReportPlan() {
@@ -12,6 +16,7 @@ function ReportPlan() {
     updatePlanItem,
     deletePlanItem
   } = useReportContext();
+  const { user } = useAuth();
 
   const [selectedPhaseId, setSelectedPhaseId] = useState('');
   const [actionTitle, setActionTitle] = useState('');
@@ -29,6 +34,9 @@ function ReportPlan() {
   const [editError, setEditError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
+  const [actionPlan, setActionPlan] = useState<ActionPlanData | null>(null);
+  const [actionPlanError, setActionPlanError] = useState('');
+  const [actionPlanSaving, setActionPlanSaving] = useState(false);
 
   const selectedRole = useMemo(
     () => reportContent.futureRoles.find((role) => role.id === selectedRoleId) || null,
@@ -83,6 +91,69 @@ function ReportPlan() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isAddModalOpen]);
+
+  useEffect(() => {
+    if (!user) return;
+    const loadPlan = async () => {
+      try {
+        const record = await getActionPlan(user.id);
+        if (record?.plan?.weeks?.length) {
+          setActionPlan(record.plan);
+        } else {
+          const generated = generateBalancedActionPlan(reportContent);
+          setActionPlan(generated);
+          await saveActionPlan(user.id, generated);
+        }
+      } catch (planError) {
+        setActionPlanError(planError instanceof Error ? planError.message : 'Unable to load your balanced plan.');
+      }
+    };
+    void loadPlan();
+  }, [reportContent, user]);
+
+  const handleToggleWeek = async (weekIndex: number, category: ActionPlanCategory) => {
+    if (!user || !actionPlan) return;
+    const updated = {
+      ...actionPlan,
+      weeks: actionPlan.weeks.map((week, index) =>
+        index === weekIndex ? { ...week, completed: { ...week.completed, [category]: !week.completed[category] } } : week
+      )
+    };
+    setActionPlan(updated);
+    setActionPlanSaving(true);
+    try {
+      await saveActionPlan(user.id, updated);
+    } catch (saveError) {
+      setActionPlanError(saveError instanceof Error ? saveError.message : 'Unable to save progress.');
+    } finally {
+      setActionPlanSaving(false);
+    }
+  };
+
+  const handleRegenerateWeek = async (weekIndex: number) => {
+    if (!user || !actionPlan) return;
+    const updated = regenerateWeek(actionPlan, weekIndex, reportContent);
+    setActionPlan(updated);
+    setActionPlanSaving(true);
+    try {
+      await saveActionPlan(user.id, updated);
+    } catch (saveError) {
+      setActionPlanError(saveError instanceof Error ? saveError.message : 'Unable to regenerate this week.');
+    } finally {
+      setActionPlanSaving(false);
+    }
+  };
+
+  const actionPlanProgress = useMemo(() => {
+    if (!actionPlan) return 0;
+    const total = actionPlan.weeks.length * 5;
+    if (!total) return 0;
+    const completed = actionPlan.weeks.reduce(
+      (count, week) => count + Object.values(week.completed).filter(Boolean).length,
+      0
+    );
+    return Math.round((completed / total) * 100);
+  }, [actionPlan]);
 
   const isCreatingNewPhase = selectedPhaseId === 'new';
 
@@ -174,6 +245,14 @@ function ReportPlan() {
     }
   };
 
+  const categoryLabels: Record<ActionPlanCategory, string> = {
+    upskill: 'Upskill',
+    cv: 'CV',
+    application: 'Application',
+    networking: 'Networking',
+    interview_prep: 'Interview prep'
+  };
+
   return (
     <section className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6">
       <div className="space-y-1">
@@ -215,6 +294,55 @@ function ReportPlan() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.12em] text-emerald-700">Balanced weekly plan</p>
+            <h3 className="text-lg font-semibold text-slate-900">Every week covers skill, CV, applications, networking, and interviews.</h3>
+            <p className="text-sm text-slate-700">
+              Progress: {actionPlanProgress}% complete {actionPlanSaving ? '• Saving...' : ''}
+            </p>
+          </div>
+        </div>
+        {actionPlanError ? <p className="text-sm text-amber-700">{actionPlanError}</p> : null}
+        {!actionPlan ? (
+          <p className="text-sm text-slate-600">Building your balanced plan...</p>
+        ) : (
+          <div className="space-y-4">
+            {actionPlan.weeks.map((week, index) => (
+              <div key={week.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-slate-900">{week.label}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleRegenerateWeek(index)}
+                    className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                  >
+                    Regenerate this week
+                  </button>
+                </div>
+                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                  {(Object.keys(week.tasks) as ActionPlanCategory[]).map((category) => (
+                    <label key={category} className="flex items-start gap-2 text-sm text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={week.completed[category]}
+                        onChange={() => handleToggleWeek(index, category)}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400"
+                      />
+                      <span>
+                        <span className="font-semibold text-slate-800">{categoryLabels[category]}:</span>{' '}
+                        {week.tasks[category]}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {isAddModalOpen ? (
