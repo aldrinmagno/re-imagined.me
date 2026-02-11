@@ -1,13 +1,7 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { buildCvPlainText } from './cvExport';
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
-
-const runTests = () => {
+describe('buildCvPlainText', () => {
   const result = buildCvPlainText({
     headline: 'Product Lead',
     summary: 'Driving growth.',
@@ -15,9 +9,15 @@ const runTests = () => {
     bullets: ['Delivered +20% activation']
   });
 
-  assert(result.includes('Product Lead'), 'Expected headline in export.');
-  assert(result.includes('Top Skills'), 'Expected skills section in export.');
-  assert(result.includes('Impact Highlights'), 'Expected bullets section in export.');
-};
+  it('includes headline', () => {
+    expect(result).toContain('Product Lead');
+  });
 
-test('buildCvPlainText', () => { runTests(); });
+  it('includes skills section', () => {
+    expect(result).toContain('Top Skills');
+  });
+
+  it('includes bullets section', () => {
+    expect(result).toContain('Impact Highlights');
+  });
+});

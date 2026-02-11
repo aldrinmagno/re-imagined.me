@@ -1,4 +1,4 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { deriveTransferableSkills } from './deriveTransferableSkills';
 
 const createEntry = (overrides = {}) => ({
@@ -16,20 +16,18 @@ const createEntry = (overrides = {}) => ({
   ...overrides
 });
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
-
-const runTests = () => {
+describe('deriveTransferableSkills', () => {
   const result = deriveTransferableSkills([createEntry()]);
-  assert(result.transferable_skills.length > 0, 'Expected skills to be derived.');
-  assert(result.impact_bullets.length === 1, 'Expected one impact bullet.');
-  assert(
-    result.transferable_skills.some((skill) => skill.name === 'Stakeholder management'),
-    'Expected stakeholder management skill.'
-  );
-};
 
-test('deriveTransferableSkills', () => { runTests(); });
+  it('derives at least one skill', () => {
+    expect(result.transferable_skills.length).toBeGreaterThan(0);
+  });
+
+  it('produces one impact bullet per entry', () => {
+    expect(result.impact_bullets).toHaveLength(1);
+  });
+
+  it('identifies stakeholder management skill', () => {
+    expect(result.transferable_skills.some((s) => s.name === 'Stakeholder management')).toBe(true);
+  });
+});

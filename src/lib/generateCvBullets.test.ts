@@ -1,13 +1,7 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateCvBullets } from './generateCvBullets';
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
-
-const runTests = () => {
+describe('generateCvBullets', () => {
   const result = generateCvBullets({
     roleTitle: 'Product Manager',
     impactInventory: [
@@ -28,8 +22,11 @@ const runTests = () => {
     transferableSkills: [{ name: 'Strategic planning', evidence: 'Roadmap definition', confidence: 0.8 }]
   });
 
-  assert(result.mostRelevant.length + result.supporting.length >= 1, 'Expected generated bullets.');
-  assert(result.mostRelevant.length <= 6, 'Expected most relevant bullets to be capped.');
-};
+  it('generates at least one bullet', () => {
+    expect(result.mostRelevant.length + result.supporting.length).toBeGreaterThanOrEqual(1);
+  });
 
-test('generateCvBullets', () => { runTests(); });
+  it('caps most relevant bullets at 6', () => {
+    expect(result.mostRelevant.length).toBeLessThanOrEqual(6);
+  });
+});

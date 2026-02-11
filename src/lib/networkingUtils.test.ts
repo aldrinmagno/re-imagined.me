@@ -1,13 +1,7 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { buildTemplate } from './networkingUtils';
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
-
-const runTests = () => {
+describe('buildTemplate', () => {
   const result = buildTemplate('Hi {name} at {org}', {
     id: '1',
     user_id: 'user',
@@ -21,8 +15,11 @@ const runTests = () => {
     updated_at: '2025-01-01'
   });
 
-  assert(result.includes('Jamie'), 'Expected name replacement.');
-  assert(result.includes('Acme'), 'Expected org replacement.');
-};
+  it('replaces {name} placeholder', () => {
+    expect(result).toContain('Jamie');
+  });
 
-test('buildTemplate', () => { runTests(); });
+  it('replaces {org} placeholder', () => {
+    expect(result).toContain('Acme');
+  });
+});

@@ -1,13 +1,7 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateBalancedActionPlan } from './actionPlanGenerator';
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
-
-const runTests = () => {
+describe('generateBalancedActionPlan', () => {
   const plan = generateBalancedActionPlan({
     futureRoles: [],
     roleSkillGroups: [],
@@ -22,8 +16,11 @@ const runTests = () => {
     interview: null
   });
 
-  assert(plan.weeks.length === 12, 'Expected 12 weeks in plan.');
-  assert(plan.weeks[0].tasks.application.includes('Apply'), 'Expected application task populated.');
-};
+  it('generates 12 weeks', () => {
+    expect(plan.weeks).toHaveLength(12);
+  });
 
-test('generateBalancedActionPlan', () => { runTests(); });
+  it('populates application task from phase items', () => {
+    expect(plan.weeks[0].tasks.application).toContain('Apply');
+  });
+});

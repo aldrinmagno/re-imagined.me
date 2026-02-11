@@ -125,7 +125,7 @@ function CVVersions() {
     setSaving(true);
     setError(null);
     try {
-      await deleteCvVersion(selectedVersion.id, user.id);
+      await deleteCvVersion(user.id, selectedVersion.id);
       setVersions((prev) => {
         const remaining = prev.filter((version) => version.id !== selectedVersion.id);
         setSelectedId(remaining[0]?.id ?? null);
@@ -143,7 +143,7 @@ function CVVersions() {
     setSaving(true);
     setError(null);
     try {
-      const updated = await updateCvVersion(selectedVersion.id, user.id, updates);
+      const updated = await updateCvVersion(user.id, selectedVersion.id, updates);
       setVersions((prev) => prev.map((version) => (version.id === updated.id ? updated : version)));
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Unable to update CV version.');

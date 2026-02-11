@@ -1,13 +1,7 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateApplicationComms } from './applicationCommsGenerator';
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
-
-const runTests = () => {
+describe('generateApplicationComms', () => {
   const payload = generateApplicationComms(
     {
       id: '1',
@@ -26,8 +20,11 @@ const runTests = () => {
     'direct'
   );
 
-  assert(payload.email_template.includes('Product Manager'), 'Expected role in email template.');
-  assert(payload.linkedin_message.includes('Acme'), 'Expected company in LinkedIn message.');
-};
+  it('includes role in email template', () => {
+    expect(payload.email_template).toContain('Product Manager');
+  });
 
-test('generateApplicationComms', () => { runTests(); });
+  it('includes company in LinkedIn message', () => {
+    expect(payload.linkedin_message).toContain('Acme');
+  });
+});

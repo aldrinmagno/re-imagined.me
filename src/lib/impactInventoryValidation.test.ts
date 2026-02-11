@@ -1,4 +1,4 @@
-import { test } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { validateImpactInventoryEntry } from './impactInventoryValidation';
 
 const createEntry = (overrides: Partial<Parameters<typeof validateImpactInventoryEntry>[0]> = {}) => ({
@@ -16,21 +16,19 @@ const createEntry = (overrides: Partial<Parameters<typeof validateImpactInventor
   ...overrides
 });
 
-const assert = (condition: boolean, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
+describe('validateImpactInventoryEntry', () => {
+  it('returns no issues for a complete entry', () => {
+    const issues = validateImpactInventoryEntry(createEntry());
+    expect(Object.keys(issues)).toHaveLength(0);
+  });
 
-const runTests = () => {
-  const validEntryIssues = validateImpactInventoryEntry(createEntry());
-  assert(Object.keys(validEntryIssues).length === 0, 'Expected no issues for a complete entry.');
+  it('flags blank title', () => {
+    const issues = validateImpactInventoryEntry(createEntry({ title: ' ' }));
+    expect(issues.title).toBeTruthy();
+  });
 
-  const missingTitleIssues = validateImpactInventoryEntry(createEntry({ title: ' ' }));
-  assert(!!missingTitleIssues.title, 'Expected title issue when title is blank.');
-
-  const missingMetricsIssues = validateImpactInventoryEntry(createEntry({ metrics: '' }));
-  assert(!!missingMetricsIssues.metrics, 'Expected metrics issue when metrics are missing.');
-};
-
-test('validateImpactInventoryEntry', () => { runTests(); });
+  it('flags missing metrics', () => {
+    const issues = validateImpactInventoryEntry(createEntry({ metrics: '' }));
+    expect(issues.metrics).toBeTruthy();
+  });
+});
