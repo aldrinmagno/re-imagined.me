@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { generateBalancedActionPlan } from './actionPlanGenerator';
 
 const assert = (condition: boolean, message: string) => {
@@ -25,4 +26,4 @@ const runTests = () => {
   assert(plan.weeks[0].tasks.application.includes('Apply'), 'Expected application task populated.');
 };
 
-runTests();
+test('generateBalancedActionPlan', () => { runTests(); });

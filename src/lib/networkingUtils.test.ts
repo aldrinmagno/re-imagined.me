@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { buildTemplate } from './networkingUtils';
 
 const assert = (condition: boolean, message: string) => {
@@ -24,4 +25,4 @@ const runTests = () => {
   assert(result.includes('Acme'), 'Expected org replacement.');
 };
 
-runTests();
+test('buildTemplate', () => { runTests(); });

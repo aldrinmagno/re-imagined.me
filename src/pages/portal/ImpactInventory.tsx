@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getSupabaseClient } from '../../lib/supabaseClient';
+import { formatDateTime } from '../../lib/dateUtils';
+import { getImpactInventory, saveImpactInventory } from '../../lib/impactInventoryApi';
 import { validateImpactInventoryEntry } from '../../lib/impactInventoryValidation';
-import type { ImpactInventoryDraft, ImpactInventoryEntry, ImpactInventoryRecord } from '../../types/impactInventory';
+import type { ImpactInventoryDraft, ImpactInventoryEntry } from '../../types/impactInventory';
 
 const STORAGE_KEY = 'impactInventoryDraft';
 
@@ -31,12 +32,6 @@ const parseDraft = (): ImpactInventoryDraft | null => {
   }
 };
 
-const formatTimestamp = (value?: string | null) => {
-  if (!value) return 'Not saved yet';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Not saved yet';
-  return date.toLocaleString();
-};
 
 function ImpactInventory() {
   const { user } = useAuth();
@@ -60,37 +55,32 @@ function ImpactInventory() {
     setLoading(true);
     setError(null);
 
-    const supabase = getSupabaseClient();
-    const { data, error: fetchError } = await supabase
-      .from('impact_inventory')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle<ImpactInventoryRecord>();
+    try {
+      const data = await getImpactInventory(user.id);
 
-    if (fetchError) {
-      setError(fetchError.message);
-    }
+      const draft = parseDraft();
+      const dbUpdatedAt = data?.updated_at ?? null;
+      const draftUpdatedAt = draft?.updatedAt ?? null;
 
-    const draft = parseDraft();
-    const dbUpdatedAt = data?.updated_at ?? null;
-    const draftUpdatedAt = draft?.updatedAt ?? null;
+      const shouldUseDraft =
+        draftUpdatedAt &&
+        (!dbUpdatedAt || new Date(draftUpdatedAt).getTime() > new Date(dbUpdatedAt).getTime());
 
-    const shouldUseDraft =
-      draftUpdatedAt &&
-      (!dbUpdatedAt || new Date(draftUpdatedAt).getTime() > new Date(dbUpdatedAt).getTime());
-
-    if (shouldUseDraft && draft) {
-      setEntries(draft.entries);
-      setIncludeInReport(draft.includeInReport);
-      setLastSavedAt(dbUpdatedAt);
-    } else if (data) {
-      setEntries(data.entries ?? []);
-      setIncludeInReport(data.include_in_report);
-      setLastSavedAt(data.updated_at);
-    } else {
-      setEntries([createEmptyEntry()]);
-      setIncludeInReport(true);
-      setLastSavedAt(null);
+      if (shouldUseDraft && draft) {
+        setEntries(draft.entries);
+        setIncludeInReport(draft.includeInReport);
+        setLastSavedAt(dbUpdatedAt);
+      } else if (data) {
+        setEntries(data.entries ?? []);
+        setIncludeInReport(data.include_in_report);
+        setLastSavedAt(data.updated_at);
+      } else {
+        setEntries([createEmptyEntry()]);
+        setIncludeInReport(true);
+        setLastSavedAt(null);
+      }
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Unable to load impact inventory.');
     }
 
     setLoading(false);
@@ -137,23 +127,13 @@ function ImpactInventory() {
     if (!user) return;
     setSaving(true);
     setError(null);
-    const supabase = getSupabaseClient();
-    const payload = {
-      user_id: user.id,
-      entries,
-      include_in_report: includeInReport
-    };
 
-    const { data, error: saveError } = await supabase
-      .from('impact_inventory')
-      .upsert(payload, { onConflict: 'user_id' })
-      .select('updated_at')
-      .single<{ updated_at: string }>();
-
-    if (saveError) {
-      setError(saveError.message);
-    } else {
-      setLastSavedAt(data.updated_at);
+    try {
+      const result = await saveImpactInventory(user.id, entries, includeInReport);
+      setLastSavedAt(result.updated_at);
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Unable to save impact inventory.');
     }
 
     setSaving(false);
@@ -209,7 +189,7 @@ function ImpactInventory() {
             />
             Include this inventory in your report drafts
           </label>
-          <span>Last saved: {formatTimestamp(lastSavedAt)}</span>
+          <span>Last saved: {formatDateTime(lastSavedAt)}</span>
         </div>
         {error && (
           <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">

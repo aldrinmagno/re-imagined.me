@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { formatDate } from '../../lib/dateUtils';
 import {
   createNetworkContact,
   createNetworkTask,
@@ -51,7 +52,6 @@ const emptyTask = (): Omit<NetworkTaskRecord, 'id' | 'user_id' | 'updated_at'> =
   linked_contact_id: null
 });
 
-const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleDateString() : '—');
 
 function Networking() {
   const { user } = useAuth();

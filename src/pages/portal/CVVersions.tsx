@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateTime } from '../../lib/dateUtils';
 import { useReportContext } from '../../components/report/ReportLayout';
 import { buildCvHtml, buildCvPlainText } from '../../lib/cvExport';
 import { createCvVersion, deleteCvVersion, getCvVersions, updateCvVersion } from '../../lib/cvVersionsApi';
@@ -19,12 +20,6 @@ const createEmptyVersion = (): CvVersionContent => ({
   bullets: []
 });
 
-const formatDate = (value?: string | null) => {
-  if (!value) return 'Not saved yet';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Not saved yet';
-  return date.toLocaleString();
-};
 
 const downloadDocx = (fileName: string, content: CvVersionContent) => {
   const html = buildCvHtml(content);
@@ -262,7 +257,7 @@ function CVVersions() {
                 >
                   <p className="font-semibold">{version.name}</p>
                   <p className="text-xs text-slate-500">
-                    {roleLabelByKey.get(version.role_key) ?? 'General'} • {formatDate(version.updated_at)}
+                    {roleLabelByKey.get(version.role_key) ?? 'General'} • {formatDateTime(version.updated_at)}
                   </p>
                 </button>
               ))}
@@ -441,7 +436,7 @@ function CVVersions() {
                 >
                   Download .docx
                 </button>
-                <span className="text-xs text-slate-500">Last updated: {formatDate(selectedVersion.updated_at)}</span>
+                <span className="text-xs text-slate-500">Last updated: {formatDateTime(selectedVersion.updated_at)}</span>
               </div>
             </div>
           )}

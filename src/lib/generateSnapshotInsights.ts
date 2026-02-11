@@ -447,12 +447,13 @@ Return only valid JSON (no markdown) matching this shape:
 `;
 
 export const generateSnapshotInsights = async (input: SnapshotInput): Promise<SnapshotInsights> => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const structuredSignals = buildStructuredSignals(input);
   const fallbackGenerated = createFallbackGeneratedSnapshot(input);
 
-  if (!apiKey) {
-    console.warn('Missing OpenAI API key; using fallback snapshot insights.');
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Missing Supabase config; using fallback snapshot insights.');
     if (input.assessmentId) {
       try {
         await persistGeneratedSnapshot(fallbackGenerated, input.assessmentId, input.goalText);
@@ -467,41 +468,43 @@ export const generateSnapshotInsights = async (input: SnapshotInput): Promise<Sn
   let generatedSnapshot = fallbackGenerated;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const messages = [
+      {
+        role: 'system',
+        content:
+          `You are a Workforce Reinvention and Skills Ecosystem Designer for re-imagined.me. Using the user's assessment, design structured, future-proof career roadmaps that emphasise:
+            - Emerging and not-yet-mainstream roles Hybrid
+            - multidisciplinary and AI-augmented careers Transferable skills that stay valuable 5–10+ years from now For each roadmap
+            - prioritise resilience to automation, adaptability, and optionality (multiple paths, not just one job title).
+            - Avoid generic or conventional career suggestions unless they clearly support a future-oriented path
+            Respond with JSON only.`
+      },
+      {
+        role: 'user',
+        content: `Assessment context: ${JSON.stringify(structuredSignals, null, 2)}`
+      },
+      {
+        role: 'user',
+        content: `Follow this schema strictly and ensure every required field is populated: ${schemaDescription}`
+      }
+    ];
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/generate-snapshot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
+        Authorization: `Bearer ${supabaseAnonKey}`
       },
       body: JSON.stringify({
+        messages,
         model: 'gpt-5.1',
         temperature: 0.3,
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'system',
-            content:
-              `You are a Workforce Reinvention and Skills Ecosystem Designer for re-imagined.me. Using the user’s assessment, design structured, future-proof career roadmaps that emphasise: 
-                - Emerging and not-yet-mainstream roles Hybrid
-                - multidisciplinary and AI-augmented careers Transferable skills that stay valuable 5–10+ years from now For each roadmap
-                - prioritise resilience to automation, adaptability, and optionality (multiple paths, not just one job title). 
-                - Avoid generic or conventional career suggestions unless they clearly support a future-oriented path
-                Respond with JSON only.`
-          },
-          {
-            role: 'user',
-            content: `Assessment context: ${JSON.stringify(structuredSignals, null, 2)}`
-          },
-          {
-            role: 'user',
-            content: `Follow this schema strictly and ensure every required field is populated: ${schemaDescription}`
-          }
-        ]
+        response_format: { type: 'json_object' }
       })
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI request failed with status ${response.status}`);
+      throw new Error(`Snapshot generation failed with status ${response.status}`);
     }
 
     const data = await response.json();

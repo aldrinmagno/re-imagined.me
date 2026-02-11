@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { filterRadarItems } from './radarUtils';
 
 const assert = (condition: boolean, message: string) => {
@@ -36,4 +37,4 @@ const runTests = () => {
   assert(result.length === 1, 'Expected to match company by query.');
 };
 
-runTests();
+test('filterRadarItems', () => { runTests(); });

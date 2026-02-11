@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import PortalLayout from './components/PortalLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -32,6 +33,7 @@ const ReportAliasRedirect = () => {
 
 function App() {
   return (
+    <ErrorBoundary>
     <Router>
       <Routes>
         <Route element={<Layout />}>
@@ -96,6 +98,7 @@ function App() {
         <Route path="/report/:section" element={<ReportAliasRedirect />} />
       </Routes>
     </Router>
+    </ErrorBoundary>
   );
 }
 

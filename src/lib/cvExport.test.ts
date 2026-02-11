@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { buildCvPlainText } from './cvExport';
 
 const assert = (condition: boolean, message: string) => {
@@ -19,4 +20,4 @@ const runTests = () => {
   assert(result.includes('Impact Highlights'), 'Expected bullets section in export.');
 };
 
-runTests();
+test('buildCvPlainText', () => { runTests(); });

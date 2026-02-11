@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { generateApplicationComms } from './applicationCommsGenerator';
 
 const assert = (condition: boolean, message: string) => {
@@ -29,4 +30,4 @@ const runTests = () => {
   assert(payload.linkedin_message.includes('Acme'), 'Expected company in LinkedIn message.');
 };
 
-runTests();
+test('generateApplicationComms', () => { runTests(); });

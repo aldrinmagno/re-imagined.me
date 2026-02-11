@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { formatDateTime } from '../../lib/dateUtils';
 import { createRadarItem, deleteRadarItem, getRadarItems, updateRadarItem } from '../../lib/radarApi';
 import { filterRadarItems } from '../../lib/radarUtils';
 import type { RadarItemRecord, RadarItemStatus, RadarItemType } from '../../types/radar';
@@ -21,7 +22,6 @@ const buildBlankItem = (type: RadarItemType): Omit<RadarItemRecord, 'id' | 'user
   meta: emptyMeta
 });
 
-const formatDate = (value: string) => new Date(value).toLocaleString();
 
 const parseTags = (value: string) =>
   value
@@ -312,7 +312,7 @@ function Radar() {
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{item.name}</p>
                       <p className="text-xs text-slate-500">
-                        Priority {item.priority} • {item.status} • Updated {formatDate(item.updated_at)}
+                        Priority {item.priority} • {item.status} • Updated {formatDateTime(item.updated_at)}
                       </p>
                       {item.link && (
                         <a href={item.link} className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">

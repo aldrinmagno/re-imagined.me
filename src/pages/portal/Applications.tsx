@@ -5,6 +5,7 @@ import { createApplicationComm, getApplicationComms } from '../../lib/applicatio
 import { generateApplicationComms } from '../../lib/applicationCommsGenerator';
 import { logJobSearchEvent } from '../../lib/jobSearchEventsApi';
 import { getSuggestedFollowUpDate, isFollowUpDue } from '../../lib/applicationUtils';
+import { formatDate } from '../../lib/dateUtils';
 import type { ApplicationRecord, ApplicationStatus } from '../../types/applications';
 import type { ApplicationCommRecord, ApplicationCommType } from '../../types/applicationComms';
 
@@ -22,7 +23,6 @@ const emptyApplication = (): Omit<ApplicationRecord, 'id' | 'updated_at' | 'user
   next_step_date: ''
 });
 
-const formatDate = (value?: string | null) => (value ? new Date(value).toLocaleDateString() : '—');
 
 function Applications() {
   const { user } = useAuth();

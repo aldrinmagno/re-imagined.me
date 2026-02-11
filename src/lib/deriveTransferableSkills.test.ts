@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { deriveTransferableSkills } from './deriveTransferableSkills';
 
 const createEntry = (overrides = {}) => ({
@@ -31,4 +32,4 @@ const runTests = () => {
   );
 };
 
-runTests();
+test('deriveTransferableSkills', () => { runTests(); });

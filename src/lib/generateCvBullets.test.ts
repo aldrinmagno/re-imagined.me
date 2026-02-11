@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { generateCvBullets } from './generateCvBullets';
 
 const assert = (condition: boolean, message: string) => {
@@ -31,4 +32,4 @@ const runTests = () => {
   assert(result.mostRelevant.length <= 6, 'Expected most relevant bullets to be capped.');
 };
 
-runTests();
+test('generateCvBullets', () => { runTests(); });

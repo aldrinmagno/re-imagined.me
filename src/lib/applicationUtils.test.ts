@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { getSuggestedFollowUpDate, isFollowUpDue } from './applicationUtils';
 
 const assert = (condition: boolean, message: string) => {
@@ -30,4 +31,4 @@ const runTests = () => {
   assert(due, 'Expected follow-up to be due after 10 days.');
 };
 
-runTests();
+test('applicationUtils', () => { runTests(); });

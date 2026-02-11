@@ -3,7 +3,7 @@ import { getCvBullets, saveCvBullets } from '../../lib/cvBulletsApi';
 import { generateCvBullets } from '../../lib/generateCvBullets';
 import { deriveTransferableSkills } from '../../lib/deriveTransferableSkills';
 import { getTransferableSkillsSnapshot, regenerateTransferableSkillsSnapshot } from '../../lib/transferableSkillsApi';
-import { getSupabaseClient } from '../../lib/supabaseClient';
+import { getImpactInventoryEntries } from '../../lib/impactInventoryApi';
 import type { ImpactInventoryEntry } from '../../types/impactInventory';
 import type { CvBulletsPayload } from '../../types/cvBullets';
 import type { TransferableSkill, TransferableSkillsSnapshotRecord } from '../../types/transferableSkills';
@@ -65,17 +65,7 @@ function CVBulletsWidget() {
       setLoading(true);
       setError(null);
 
-      const supabase = getSupabaseClient();
-      const { data: inventoryData, error: inventoryError } = await supabase
-        .from('impact_inventory')
-        .select('entries, include_in_report')
-        .eq('user_id', user.id)
-        .maybeSingle<{ entries: ImpactInventoryEntry[]; include_in_report: boolean }>();
-
-      if (inventoryError) {
-        setError(inventoryError.message);
-      }
-
+      const inventoryData = await getImpactInventoryEntries(user.id);
       const entries = normalizeEntries(inventoryData?.entries ?? []);
       setImpactInventory(entries);
 

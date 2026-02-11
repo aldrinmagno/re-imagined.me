@@ -1,3 +1,4 @@
+import { test } from 'vitest';
 import { validateImpactInventoryEntry } from './impactInventoryValidation';
 
 const createEntry = (overrides: Partial<Parameters<typeof validateImpactInventoryEntry>[0]> = {}) => ({
@@ -32,4 +33,4 @@ const runTests = () => {
   assert(!!missingMetricsIssues.metrics, 'Expected metrics issue when metrics are missing.');
 };
 
-runTests();
+test('validateImpactInventoryEntry', () => { runTests(); });
